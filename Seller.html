@@ -127,6 +127,9 @@
   td{padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top;}
   tr:last-child td{border-bottom:none;}
   tr:hover td{background:#FAF9F6;}
+  tr.my-sales-row td{background:#E3F3E6;}
+  tr.my-sales-row:hover td{background:#D4EBD9;}
+  tr.my-sales-row td:first-child{box-shadow:inset 4px 0 0 var(--green);}
   .tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
   .tag.status-Not-Started{background:#E9E7E1;color:#5A5D66;}
   .tag.status-In-Progress{background:#DDF0EE;color:var(--teal-dark);}
@@ -339,6 +342,7 @@ let ALL_PROFILES = [];
 let ALL_STAGES = [];        // Developing Stages, Admin-managed (System Management)
 let ALL_STATUSES = [];      // Project Statuses, Admin-managed (System Management) — each {name, isDelivery, isDelayed}
 let ALL_UPDATES = [];       // cached recent daily updates, used for "last update" lookups
+let ALL_CLIENT_REQUESTS = []; // sales-submitted new client/project entries awaiting approval
 let COMPANY_SETTINGS = { salesTarget:0, deliveryTarget:0 };  // company-wide targets, Admin-set
 let currentView = "dashboard";
 let systemTab = "targets";  // which sub-tab is open on the System Management page
@@ -542,13 +546,14 @@ auth.onAuthStateChanged(async (fbUser) => {
    security rules server-side for real enforcement)
    ============================================================ */
 async function loadAll(){
-  const [u,c,p,pr,st,stat] = await Promise.all([
+  const [u,c,p,pr,st,stat,cr] = await Promise.all([
     db.collection('users').get(),
     db.collection('clients').get(),
     db.collection('projects').get(),
     db.collection('profiles').get(),
     db.collection('stages').get(),
-    db.collection('statuses').get()
+    db.collection('statuses').get(),
+    db.collection('clientRequests').get()
   ]);
   ALL_USERS = u.docs.map(d=>({id:d.id,...d.data()}));
   ALL_CLIENTS = c.docs.map(d=>({id:d.id,...d.data()}));
@@ -556,6 +561,7 @@ async function loadAll(){
   ALL_PROFILES = pr.docs.map(d=>({id:d.id,...d.data()}));
   ALL_STAGES = st.docs.map(d=>({id:d.id,...d.data()}));
   ALL_STATUSES = stat.docs.map(d=>({id:d.id,...d.data()}));
+  ALL_CLIENT_REQUESTS = cr.docs.map(d=>({id:d.id,...d.data()}));
   // Daily updates are fetched separately (capped) so "last update" lookups
   // work on the dashboard without pulling the entire history every load.
   try{
@@ -607,6 +613,7 @@ function setupRealtimeSync(){
     ['profiles', list=>ALL_PROFILES=list],
     ['stages', list=>ALL_STAGES=list],
     ['statuses', list=>ALL_STATUSES=list],
+    ['clientRequests', list=>ALL_CLIENT_REQUESTS=list],
   ];
   liveCollections.forEach(([coll, setter])=>{
     const unsub = db.collection(coll).onSnapshot(snap=>{
@@ -652,6 +659,25 @@ function isDelayedStatusName(statusName){
   return !!(s && s.isDelayed);
 }
 function isOverdue(p){ return p.deadline && !isDeliveryStatusName(p.status) && new Date(p.deadline) < new Date(new Date().toDateString()); }
+function deadlineEndMs(deadline){
+  if(!deadline) return null;
+  const t = new Date(deadline + 'T23:59:59').getTime();
+  return isNaN(t) ? null : t;
+}
+function sortProjectsByDeadline(projects){
+  return projects.slice().sort((a,b)=>{
+    const aOver = isOverdue(a) ? 1 : 0;
+    const bOver = isOverdue(b) ? 1 : 0;
+    if(aOver !== bOver) return aOver - bOver;
+    const ad = deadlineEndMs(a.deadline);
+    const bd = deadlineEndMs(b.deadline);
+    if(ad == null && bd == null) return (b.createdAt||'').localeCompare(a.createdAt||'');
+    if(ad == null) return 1;
+    if(bd == null) return -1;
+    if(ad !== bd) return ad - bd;
+    return String(a.profileName||'').localeCompare(String(b.profileName||''));
+  });
+}
 function daysUntil(d){ if(!d) return null; return Math.ceil((new Date(d)-new Date(new Date().toDateString()))/86400000); }
 function slug(s){ return String(s).replace(/\s+/g,'-'); }
 // Color-codes a status tag by its Admin-set flags rather than a fixed list
@@ -696,7 +722,7 @@ setInterval(tickCountdowns, 1000);
    SHELL / NAV
    ============================================================ */
 function navItemsForRole(role){
-  if(role==="Sales") return [["dashboard","Dashboard"],["projects","My Project"],["allProjects","All Projects"],["clients","Clients"],["updates","Daily Updates"],["notes","Client Notes"],["profiles","Profile Settings"]];
+  if(role==="Sales") return [["dashboard","Dashboard"],["projects","My Project"],["allProjects","All Projects"],["newClientEntry","New Client Entry"],["clients","Clients"],["updates","Daily Updates"],["notes","Client Notes"],["profiles","Profile Settings"]];
   return [["dashboard","Dashboard"],["projects","Projects"],["clients","Clients"],["updates","Daily Updates"],["notes","Client Notes"],["profiles","Profile Settings"]];
 }
 function renderShell(){
@@ -736,7 +762,7 @@ function navigate(view){
   closeNav();
   currentView = view;
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===view || (view==='devDetail' && b.dataset.view==='dashboard')));
-  const renderers = { dashboard:renderDashboard, projects:renderProjects, allProjects:renderAllProjects, clients:renderClients, updates:renderUpdates, notes:renderNotes, profiles:renderProfiles };
+  const renderers = { dashboard:renderDashboard, projects:renderProjects, allProjects:renderAllProjects, newClientEntry:renderNewClientEntry, clients:renderClients, updates:renderUpdates, notes:renderNotes, profiles:renderProfiles };
   (renderers[view]||renderDashboard)();
   wrapTables();
 }
@@ -1046,7 +1072,9 @@ function renderAllProjectTable(projects){
   return `<table><thead><tr>
     <th>Profile</th><th>Client</th><th>Sales</th><th>Developer</th><th>Status</th><th>Priority</th><th>Deadline</th><th>Budget</th>
   </tr></thead><tbody>
-  ${projects.map(p=>`<tr>
+  ${projects.map(p=>{
+    const mine = CURRENT_USER && p.salesOwnerId === (CURRENT_USER.uid || CURRENT_USER.id);
+    return `<tr class="${mine ? 'my-sales-row' : ''}">
     <td>${p.profileName||''}<div class="mono" style="color:var(--slate);font-size:11px;">${(p.profileTags||[]).join(', ')}</div></td>
     <td>${clientName(p.clientId)}</td>
     <td>${userName(p.salesOwnerId)}</td>
@@ -1055,18 +1083,23 @@ function renderAllProjectTable(projects){
     <td><span class="tag pri-${p.priority}">${p.priority}</span></td>
     <td class="mono">${p.deadline||'—'}<br><span class="live-countdown" data-deadline="${p.deadline||''}">—</span></td>
     <td class="mono">${p.budget?('$'+p.budget):'—'}</td>
-  </tr>`).join('')}
+  </tr>`;
+  }).join('')}
   </tbody></table>`;
 }
 function renderAllProjects(){
-  const projects = ALL_PROJECTS.slice().sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||''));
+  const projects = sortProjectsByDeadline(ALL_PROJECTS);
   document.getElementById('main').innerHTML = `
     <div class="topline"><h2>All Projects</h2></div>
-    <div class="setup-note" style="margin-bottom:14px;max-width:720px;">Company-wide project list — view only. Projects assigned to you are under <b>My Project</b>.</div>
+    <div class="setup-note" style="margin-bottom:14px;max-width:720px;">Company-wide project list — view only. <b>Green rows</b> are your projects. Sorted by deadline: <b>time remaining on top</b>, <b>overdue at bottom</b> (same order for everyone).</div>
     ${renderAllProjectTable(projects)}
   `;
 }
 function openProjectModal(id){
+  if(CURRENT_USER.role==="Sales"){
+    alert("Sales cannot add or edit projects directly. Use New Client Entry and wait for Admin/PM approval.");
+    return;
+  }
   const p = id ? ALL_PROJECTS.find(x=>x.id===id) : {};
   const devs = ALL_USERS.filter(u=>["Developer","Freelancer"].includes(u.role));
   const leads = ALL_USERS.filter(u=>u.role==="Team Lead");
@@ -1108,6 +1141,10 @@ function openProjectModal(id){
   `);
 }
 async function saveProject(id){
+  if(CURRENT_USER.role==="Sales"){
+    alert("Sales cannot add or edit projects directly. Use New Client Entry — the project is added to All Projects only after Admin or PM approval.");
+    return;
+  }
   const existing = id ? ALL_PROJECTS.find(p=>p.id===id) : null;
   const newStatus = val('f_status');
   const newStage = val('f_stage');
@@ -1167,6 +1204,10 @@ function renderClients(){
   `;
 }
 function openClientModal(id){
+  if(CURRENT_USER.role==="Sales"){
+    alert("Sales cannot add or edit clients directly. Use New Client Entry and wait for Admin/PM approval.");
+    return;
+  }
   const c = id ? ALL_CLIENTS.find(x=>x.id===id) : {};
   const salesUsers = ALL_USERS.filter(u=>u.role==="Sales");
   showModal(`
@@ -1181,10 +1222,120 @@ function openClientModal(id){
   `);
 }
 async function saveClient(id){
+  if(CURRENT_USER.role==="Sales"){
+    alert("Sales cannot add or edit clients directly. Use New Client Entry — the client and project are created only after Admin or PM approval.");
+    return;
+  }
   const doc = { name: val('f_cname'), companyProfile: val('f_cprofile'), assignedSalesRep: val('f_csales') };
   if(id) await db.collection('clients').doc(id).update(doc);
   else await db.collection('clients').add(doc);
   closeModal(); await refreshAndRender();
+}
+
+/* ============================================================
+   NEW CLIENT ENTRY (Sales → Admin/PM approval)
+   ============================================================ */
+function myClientRequests(){
+  const uid = CURRENT_USER && (CURRENT_USER.uid || CURRENT_USER.id);
+  return ALL_CLIENT_REQUESTS.filter(r=>r.salesOwnerId===uid);
+}
+function requestStatusStyle(status){
+  if(status==="approved") return 'background:#DEF0E1;color:var(--green);';
+  if(status==="rejected") return 'background:#F6DAD6;color:var(--red);';
+  return 'background:#FBEACB;color:#8A6512;';
+}
+function requestStatusLabel(status){
+  if(status==="approved") return "Approved";
+  if(status==="rejected") return "Rejected";
+  return "Pending";
+}
+function defaultProjectStatus(){
+  const s = ALL_STATUSES.find(x=>!x.isDelivery);
+  return s ? s.name : "Not Started";
+}
+function clientRequestEntryRowHtml(r){
+  return `<tr>
+    <td>${escHtml(r.profileName||'')}<div class="mono" style="color:var(--slate);font-size:11px;">${escHtml(r.profileTag||'')}</div></td>
+    <td>${escHtml(r.clientName||'')}</td>
+    <td>${userName(r.salesOwnerId)}</td>
+    <td>${userName(r.assignedDevId)}</td>
+    <td><span class="tag" style="${requestStatusStyle(r.status)}">${requestStatusLabel(r.status)}</span></td>
+    <td><span class="tag pri-${r.priority||'Medium'}">${r.priority||'Medium'}</span></td>
+    <td class="mono">${r.deadline||'—'}</td>
+    <td class="mono">${r.budget?('$'+r.budget):'—'}</td>
+    <td class="row-actions">${r.status==='pending' ? `<button onclick="openClientRequestModal('${r.id}')">Edit</button>` : '—'}</td>
+  </tr>`;
+}
+function renderNewClientEntry(){
+  const rows = myClientRequests().sort((a,b)=>(b.submittedAt||'').localeCompare(a.submittedAt||''));
+  document.getElementById('main').innerHTML = `
+    <div class="topline"><h2>New Client Entry</h2>
+      <button class="add-btn" onclick="openClientRequestModal()">+ Submit entry</button>
+    </div>
+    <div class="setup-note" style="margin-bottom:14px;max-width:820px;">Submit here for <b>approval only</b> — nothing is added to All Projects yet. After <b>Admin</b> or <b>Project Manager</b> approves, the client + project will be created automatically.</div>
+    <table><thead><tr>
+      <th>Profile</th><th>Client</th><th>Sales</th><th>Developer</th><th>Approval</th><th>Priority</th><th>Deadline</th><th>Budget</th><th></th>
+    </tr></thead><tbody>
+    ${rows.map(r=>clientRequestEntryRowHtml(r)).join('') || '<tr><td class="empty" colspan="9">No entries yet. Click <b>Submit entry</b> to add a new client/project.</td></tr>'}
+    </tbody></table>
+  `;
+}
+function openClientRequestModal(id){
+  const r = id ? ALL_CLIENT_REQUESTS.find(x=>x.id===id) : {};
+  if(id){
+    const uid = CURRENT_USER.uid || CURRENT_USER.id;
+    if(r.status!=='pending'){ alert('Only pending entries can be edited.'); return; }
+    if(r.salesOwnerId!==uid){ alert('You can only edit your own entries.'); return; }
+  }
+  const devs = ALL_USERS.filter(u=>["Developer","Freelancer"].includes(u.role));
+  const pStatus = r.projectStatus || defaultProjectStatus();
+  showModal(`
+    <h3>${id?'Edit entry':'New client entry'}</h3>
+    <label>Profile (project name)</label><input id="f_cr_project" value="${escHtml(r.profileName||'')}" placeholder="e.g. NovaTech Corporate Site">
+    <label>Profile type</label><select id="f_cr_tag"><option value="">— none —</option>${ALL_PROFILES.map(pr=>`<option value="${escHtml(pr.name)}" ${r.profileTag===pr.name?'selected':''}>${escHtml(pr.name)}</option>`).join('')}</select>
+    <label>Client</label><input id="f_cr_client" value="${escHtml(r.clientName||'')}" placeholder="e.g. NovaTech Ltd">
+    <label>Sales</label><input value="${escHtml(userName(CURRENT_USER.uid||CURRENT_USER.id))}" readonly>
+    <label>Developer</label><select id="f_cr_dev"><option value="">— unassigned —</option>${devs.map(u=>`<option value="${u.id}" ${r.assignedDevId===u.id?'selected':''}>${u.name} (${u.role})</option>`).join('')}</select>
+    <label>Status</label><select id="f_cr_pstatus">${ALL_STATUSES.map(s=>`<option ${pStatus===s.name?'selected':''}>${s.name}</option>`).join('')}</select>
+    <div class="setup-note" style="margin-top:8px;">This is saved as a <b>pending request</b>. The project status above is applied only after Admin/PM approval.</div>
+    <label>Priority</label><select id="f_cr_priority">${PRIORITIES.map(p=>`<option ${(r.priority||'Medium')===p?'selected':''}>${p}</option>`).join('')}</select>
+    <label>Deadline</label><input id="f_cr_deadline" type="date" value="${r.deadline||''}">
+    <label>Budget</label><input id="f_cr_budget" type="number" value="${r.budget||''}" placeholder="$">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveClientRequest('${id||''}')">Submit</button>
+    </div>
+  `);
+}
+async function saveClientRequest(id){
+  const clientName = val('f_cr_client').trim();
+  const profileName = val('f_cr_project').trim();
+  if(!clientName || !profileName){ alert('Client and Profile (project name) are required.'); return; }
+  const doc = {
+    clientName,
+    profileName,
+    profileTag: val('f_cr_tag'),
+    budget: Number(val('f_cr_budget'))||0,
+    priority: val('f_cr_priority') || 'Medium',
+    deadline: val('f_cr_deadline'),
+    projectStatus: val('f_cr_pstatus') || defaultProjectStatus(),
+    assignedDevId: val('f_cr_dev'),
+    salesOwnerId: CURRENT_USER.uid || CURRENT_USER.id
+  };
+  if(id){
+    const existing = ALL_CLIENT_REQUESTS.find(r=>r.id===id);
+    if(!existing || existing.status!=='pending'){ alert('Only pending entries can be edited.'); return; }
+    doc.status = 'pending';
+    await db.collection('clientRequests').doc(id).update(doc);
+  } else {
+    doc.status = 'pending';
+    doc.submittedAt = new Date().toISOString().slice(0,10);
+    doc.submittedBy = CURRENT_USER.uid || CURRENT_USER.id;
+    await db.collection('clientRequests').add(doc);
+  }
+  closeModal();
+  alert('Submitted for approval. It will appear in All Projects only after Admin or PM approves.');
+  navigate('newClientEntry');
 }
 
 /* ============================================================

@@ -348,6 +348,16 @@
       "name": "FitTrack",
       "companyProfile": "Fitness brand identity and landing visuals.",
       "assignedSalesRep": "antuSalesUid0000000001"
+    },
+    "znt5NjBzdYmUMH7G7oN9": {
+      "name": "aaaaaaaaa",
+      "companyProfile": "rahattul",
+      "assignedSalesRep": "protikSalesUid0000001"
+    },
+    "hsVznxJzJ9FLz9frw0vk": {
+      "name": "dsdddd",
+      "companyProfile": "Rahatul",
+      "assignedSalesRep": "protikSalesUid0000001"
     }
   },
   "projects": {
@@ -481,7 +491,7 @@
       "assignedDevId": "tanvirDevUid0000000001",
       "salesOwnerId": "protikSalesUid0000001",
       "assignedPMId": "rafiqPmUid00000000001",
-      "status": "Completed",
+      "status": "In Progress",
       "priority": "High",
       "startDate": "2026-07-05",
       "deadline": "2026-08-10",
@@ -489,7 +499,7 @@
       "profileTags": [
         "Web Development"
       ],
-      "developingStage": "Delivered",
+      "developingStage": "Development",
       "extensions": 0,
       "reviewRating": 4.8,
       "createdAt": "2026-07-05",
@@ -579,6 +589,26 @@
       "createdAt": "2026-08-03",
       "completedAt": "2026-08-18",
       "deliveredAt": "2026-08-18"
+    },
+    "ynENh3dtMxKvn5nCGXto": {
+      "profileName": "ui",
+      "clientId": "cli_brightshop",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedDevId": "farhanaDevUid00000001",
+      "salesOwnerId": "protikSalesUid0000001",
+      "status": "In Progress",
+      "priority": "Medium",
+      "startDate": "2026-09-01",
+      "deadline": "2026-09-07",
+      "budget": 200,
+      "profileTags": [
+        "momin"
+      ],
+      "developingStage": "Development",
+      "extensions": 0,
+      "reviewRating": null,
+      "assignedPMId": "sanaulAdminUid0000001",
+      "createdAt": "2026-09-01"
     }
   },
   "dailyUpdates": {
@@ -655,6 +685,67 @@
       "date": "2026-08-26",
       "addedBy": "adibSalesUid0000000001",
       "content": "Kickoff next week. They will share Figma + API docs on Monday."
+    }
+  },
+  "clientRequests": {
+    "Da7jbtyhGtoBTQyRC7Il": {
+      "clientName": "aaaaaaaaa",
+      "profileName": "fadsljkasd",
+      "companyProfile": "rahattul",
+      "budget": 0,
+      "priority": "Medium",
+      "deadline": "2026-10-09",
+      "profileTag": "SEO",
+      "notes": "dfasf",
+      "salesOwnerId": "protikSalesUid0000001",
+      "status": "approved",
+      "submittedAt": "2026-09-01",
+      "submittedBy": "protikSalesUid0000001",
+      "teamLeadId": "",
+      "assignedDevId": "",
+      "assignedPMId": "",
+      "reviewedAt": "2026-09-01",
+      "reviewedBy": "sanaulAdminUid0000001",
+      "clientId": "znt5NjBzdYmUMH7G7oN9",
+      "projectId": "vTfl0dxhTpP7SM5qfEKG"
+    },
+    "XMVLzZKdC4EPvhIDfzJi": {
+      "clientName": "qqqqqq",
+      "profileName": "ui",
+      "profileTag": "momin",
+      "budget": 900,
+      "priority": "Medium",
+      "deadline": "2026-09-16",
+      "projectStatus": "Not Started",
+      "assignedDevId": "",
+      "salesOwnerId": "protikSalesUid0000001",
+      "status": "rejected",
+      "submittedAt": "2026-09-01",
+      "submittedBy": "protikSalesUid0000001",
+      "teamLeadId": "",
+      "assignedPMId": "",
+      "reviewedAt": "2026-09-01",
+      "reviewedBy": "sanaulAdminUid0000001"
+    },
+    "FjAVowHikLPMroTLeiya": {
+      "clientName": "dsdddd",
+      "profileName": "111",
+      "profileTag": "Rahatul",
+      "budget": 100,
+      "priority": "Medium",
+      "deadline": "2026-09-02",
+      "projectStatus": "Not Started",
+      "assignedDevId": "",
+      "salesOwnerId": "protikSalesUid0000001",
+      "status": "approved",
+      "submittedAt": "2026-09-01",
+      "submittedBy": "protikSalesUid0000001",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "reviewedAt": "2026-09-01",
+      "reviewedBy": "sanaulAdminUid0000001",
+      "clientId": "hsVznxJzJ9FLz9frw0vk",
+      "projectId": "Yrfx8CD2axk1FZAU7JTt"
     }
   }
 }

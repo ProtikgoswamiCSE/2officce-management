@@ -350,6 +350,7 @@ let ALL_PROFILES = [];
 let ALL_STAGES = [];        // Developing Stages, Admin-managed (System Management)
 let ALL_STATUSES = [];      // Project Statuses, Admin-managed (System Management) — each {name, isDelivery, isDelayed}
 let ALL_UPDATES = [];       // cached recent daily updates, used for "last update" lookups
+let ALL_CLIENT_REQUESTS = []; // sales-submitted new client/project entries awaiting approval
 let COMPANY_SETTINGS = { salesTarget:0, deliveryTarget:0 };  // company-wide targets, Admin-set
 let currentView = "dashboard";
 let systemTab = "targets";  // which sub-tab is open on the System Management page
@@ -569,12 +570,13 @@ async function loadAll(){
       userDocs = CURRENT_USER ? [{id:CURRENT_USER.uid,...CURRENT_USER}] : [];
     }
   }
-  const [c,p,pr,st,stat] = await Promise.all([
+  const [c,p,pr,st,stat,cr] = await Promise.all([
     db.collection('clients').get(),
     db.collection('projects').get(),
     db.collection('profiles').get(),
     db.collection('stages').get(),
-    db.collection('statuses').get()
+    db.collection('statuses').get(),
+    db.collection('clientRequests').get()
   ]);
   ALL_USERS = userDocs;
   ALL_CLIENTS = c.docs.map(d=>({id:d.id,...d.data()}));
@@ -582,6 +584,7 @@ async function loadAll(){
   ALL_PROFILES = pr.docs.map(d=>({id:d.id,...d.data()}));
   ALL_STAGES = st.docs.map(d=>({id:d.id,...d.data()}));
   ALL_STATUSES = stat.docs.map(d=>({id:d.id,...d.data()}));
+  ALL_CLIENT_REQUESTS = cr.docs.map(d=>({id:d.id,...d.data()}));
   // Daily updates are fetched separately (capped) so "last update" lookups
   // work on the dashboard without pulling the entire history every load.
   try{
@@ -641,6 +644,7 @@ function setupRealtimeSync(){
     ['profiles', list=>ALL_PROFILES=list],
     ['stages', list=>ALL_STAGES=list],
     ['statuses', list=>ALL_STATUSES=list],
+    ['clientRequests', list=>ALL_CLIENT_REQUESTS=list],
   ];
   liveCollections.forEach(([coll, setter])=>{
     const unsub = db.collection(coll).onSnapshot(snap=>{
@@ -691,6 +695,25 @@ function isDelayedStatusName(statusName){
   return !!(s && s.isDelayed);
 }
 function isOverdue(p){ return p.deadline && !isDeliveryStatusName(p.status) && new Date(p.deadline) < new Date(new Date().toDateString()); }
+function deadlineEndMs(deadline){
+  if(!deadline) return null;
+  const t = new Date(deadline + 'T23:59:59').getTime();
+  return isNaN(t) ? null : t;
+}
+function sortProjectsByDeadline(projects){
+  return projects.slice().sort((a,b)=>{
+    const aOver = isOverdue(a) ? 1 : 0;
+    const bOver = isOverdue(b) ? 1 : 0;
+    if(aOver !== bOver) return aOver - bOver;
+    const ad = deadlineEndMs(a.deadline);
+    const bd = deadlineEndMs(b.deadline);
+    if(ad == null && bd == null) return (b.createdAt||'').localeCompare(a.createdAt||'');
+    if(ad == null) return 1;
+    if(bd == null) return -1;
+    if(ad !== bd) return ad - bd;
+    return String(a.profileName||'').localeCompare(String(b.profileName||''));
+  });
+}
 function daysUntil(d){ if(!d) return null; return Math.ceil((new Date(d)-new Date(new Date().toDateString()))/86400000); }
 function slug(s){ return String(s).replace(/\s+/g,'-'); }
 // Color-codes a status tag by its Admin-set flags rather than a fixed list
@@ -735,7 +758,7 @@ setInterval(tickCountdowns, 1000);
    SHELL / NAV
    ============================================================ */
 function navItemsForRole(role){
-  const items = [["dashboard","Dashboard"],["projects","Projects"],["clients","Clients"],["updates","Daily Updates"],["notes","Client Notes"],["users","Users"],["profiles","Profile Settings"],["system","System Management"]];
+  const items = [["dashboard","Dashboard"],["clientApproval","New Client Approval"],["projects","All Projects"],["clients","Clients"],["updates","Daily Updates"],["notes","Client Notes"],["users","Users"],["profiles","Profile Settings"],["system","System Management"]];
   if(isCompanyAdminUser()) items.push(["userManage","User Manage"]);
   return items;
 }
@@ -776,7 +799,7 @@ function navigate(view){
   closeNav();
   currentView = view;
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===view || (view==='devDetail' && b.dataset.view==='dashboard')));
-  const renderers = { dashboard:renderDashboard, projects:renderProjects, clients:renderClients, updates:renderUpdates, notes:renderNotes, users:renderUsers, userManage:renderUserManage, profiles:renderProfiles, system:renderSystemManagement, devDetail:renderDevDetail };
+  const renderers = { dashboard:renderDashboard, clientApproval:renderClientApproval, projects:renderProjects, clients:renderClients, updates:renderUpdates, notes:renderNotes, users:renderUsers, userManage:renderUserManage, profiles:renderProfiles, system:renderSystemManagement, devDetail:renderDevDetail };
   (renderers[view]||renderDashboard)();
   wrapTables();
 }
@@ -1010,6 +1033,7 @@ function renderDashboard(){
   const projects = visibleProjects();
   document.getElementById('main').innerHTML = `
     ${statCardsHtml(projects)}
+    ${clientApprovalDashboardHtml()}
     ${leaderboardBlockHtml()}
   `;
 }
@@ -1041,13 +1065,14 @@ function renderProjectTable(projects, showActions=true){
   if(!projects.length) return `<div class="empty">No projects yet.</div>`;
   const canEdit = ["Admin","Project Manager","Team Lead"].includes(CURRENT_USER.role);
   return `<table><thead><tr>
-    <th>Profile</th><th>Client</th><th>Assigned</th><th>Status</th><th>Priority</th><th>Deadline</th>
+    <th>Profile</th><th>Client</th><th>Sales</th><th>Developer</th><th>Status</th><th>Priority</th><th>Deadline</th>
     ${CURRENT_USER.role!=="Freelancer" ? "<th>Budget</th>" : ""}
     ${showActions && canEdit ? "<th></th>" : ""}
   </tr></thead><tbody>
   ${projects.map(p=>`<tr>
     <td>${p.profileName||''}<div class="mono" style="color:var(--slate);font-size:11px;">${(p.profileTags||[]).join(', ')}</div></td>
     <td>${clientName(p.clientId)}</td>
+    <td>${userName(p.salesOwnerId)}</td>
     <td>${userName(p.assignedDevId)}</td>
     <td><span class="tag" style="${statusTagStyle(p.status)}">${p.status}</span></td>
     <td><span class="tag pri-${p.priority}">${p.priority}</span></td>
@@ -1058,12 +1083,13 @@ function renderProjectTable(projects, showActions=true){
   </tbody></table>`;
 }
 function renderProjects(){
-  const projects = visibleProjects();
+  const projects = sortProjectsByDeadline(visibleProjects());
   const canCreate = ["Admin","Project Manager"].includes(CURRENT_USER.role);
   document.getElementById('main').innerHTML = `
-    <div class="topline"><h2>Projects</h2>
+    <div class="topline"><h2>All Projects</h2>
       ${canCreate? `<button class="add-btn" onclick="openProjectModal()">+ New Project</button>`:''}
     </div>
+    <div class="setup-note" style="margin-bottom:14px;max-width:720px;">Company-wide project list. Sorted by deadline: <b>time remaining on top</b>, <b>overdue at bottom</b> (same order for everyone).</div>
     ${renderProjectTable(projects)}
   `;
 }
@@ -1186,6 +1212,222 @@ async function saveClient(id){
   if(id) await db.collection('clients').doc(id).update(doc);
   else await db.collection('clients').add(doc);
   closeModal(); await refreshAndRender();
+}
+
+/* ============================================================
+   NEW CLIENT APPROVAL (Sales entries → All Projects)
+   ============================================================ */
+function canReviewClientRequests(){
+  return ["Admin","Project Manager"].includes(CURRENT_USER.role);
+}
+function pendingClientRequests(){
+  return ALL_CLIENT_REQUESTS.filter(r=>r.status==="pending");
+}
+function requestStatusStyle(status){
+  if(status==="approved") return 'background:#DEF0E1;color:var(--green);';
+  if(status==="rejected") return 'background:#F6DAD6;color:var(--red);';
+  return 'background:#FBEACB;color:#8A6512;';
+}
+function requestStatusLabel(status){
+  if(status==="approved") return "Approved";
+  if(status==="rejected") return "Rejected";
+  return "Pending";
+}
+function defaultProjectStatus(){
+  const s = ALL_STATUSES.find(x=>!x.isDelivery);
+  return s ? s.name : "Not Started";
+}
+function defaultProjectStage(){
+  const s = ALL_STAGES.find(x=>!x.isDelivery);
+  return s ? s.name : "";
+}
+function clientRequestRowHtml(r, compact){
+  const actions = r.status==="pending"
+    ? `<button onclick="openClientRequestReviewModal('${r.id}')">Review</button>`
+    : `<button onclick="openClientRequestReviewModal('${r.id}')">View</button>`;
+  const pStatus = r.projectStatus || defaultProjectStatus();
+  return `<tr>
+    <td>${escHtml(r.profileName||'')}<div class="mono" style="color:var(--slate);font-size:11px;">${escHtml(r.profileTag||'')}</div>
+      ${r.status!=='pending' ? `<div style="margin-top:4px;"><span class="tag" style="${requestStatusStyle(r.status)}">${requestStatusLabel(r.status)}</span></div>` : ''}</td>
+    <td>${escHtml(r.clientName||'')}</td>
+    <td>${userName(r.salesOwnerId)}</td>
+    <td>${userName(r.assignedDevId)}</td>
+    <td><span class="tag" style="${statusTagStyle(pStatus)}">${escHtml(pStatus)}</span></td>
+    <td><span class="tag pri-${r.priority||'Medium'}">${r.priority||'Medium'}</span></td>
+    <td class="mono">${r.deadline||'—'}</td>
+    <td class="mono">${r.budget?('$'+r.budget):'—'}</td>
+    ${compact ? '' : `<td class="row-actions">${actions}</td>`}
+  </tr>`;
+}
+function clientApprovalDashboardHtml(){
+  if(!canReviewClientRequests()) return '';
+  const pending = pendingClientRequests().sort((a,b)=>(b.submittedAt||'').localeCompare(a.submittedAt||'')).slice(0,5);
+  if(!pending.length) return '';
+  return `
+    <div class="lb-panel" style="margin-bottom:22px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+        <h3 style="margin:0;">New Client Approval</h3>
+        <button class="add-btn" style="font-size:12px;padding:6px 12px;" onclick="navigate('clientApproval')">View all (${pendingClientRequests().length} pending)</button>
+      </div>
+      <div class="lb-panel-sub" style="margin-bottom:10px;">Sales entries waiting for approval — approved projects are added to <b>All Projects</b>.</div>
+      <table><thead><tr><th>Profile</th><th>Client</th><th>Sales</th><th>Developer</th><th>Status</th><th>Priority</th><th>Deadline</th><th>Budget</th></tr></thead>
+      <tbody>${pending.map(r=>clientRequestRowHtml(r,true)).join('')}</tbody></table>
+    </div>`;
+}
+function renderClientApproval(){
+  if(!canReviewClientRequests()){
+    document.getElementById('main').innerHTML = '<div class="empty">Not available for your role.</div>';
+    return;
+  }
+  const rows = ALL_CLIENT_REQUESTS.slice().sort((a,b)=>{
+    const order = {pending:0, approved:1, rejected:2};
+    const ao = order[a.status] ?? 9;
+    const bo = order[b.status] ?? 9;
+    if(ao!==bo) return ao-bo;
+    return (b.submittedAt||'').localeCompare(a.submittedAt||'');
+  });
+  document.getElementById('main').innerHTML = `
+    <div class="topline"><h2>New Client Approval</h2></div>
+    <div class="setup-note" style="margin-bottom:14px;max-width:760px;"><b>Approve</b> → client + project created in <b>All Projects</b>. <b>Reject</b> → nothing is added to All Projects.</div>
+    <table><thead><tr>
+      <th>Profile</th><th>Client</th><th>Sales</th><th>Developer</th><th>Status</th><th>Priority</th><th>Deadline</th><th>Budget</th><th></th>
+    </tr></thead><tbody>
+    ${rows.map(r=>clientRequestRowHtml(r,false)).join('') || '<tr><td class="empty" colspan="9">No client entries yet.</td></tr>'}
+    </tbody></table>
+  `;
+}
+function openClientRequestReviewModal(id){
+  if(!canReviewClientRequests()) return;
+  const r = ALL_CLIENT_REQUESTS.find(x=>x.id===id);
+  if(!r) return;
+  const devs = ALL_USERS.filter(u=>["Developer","Freelancer"].includes(u.role));
+  const leads = ALL_USERS.filter(u=>u.role==="Team Lead");
+  const pms = ALL_USERS.filter(u=>u.role==="Project Manager");
+  const pending = r.status==="pending";
+  const pStatus = r.projectStatus || defaultProjectStatus();
+  showModal(`
+    <h3>${pending?'Review entry':'View entry'} — ${escHtml(r.clientName||'')}</h3>
+    <label>Profile (project name)</label><input id="f_cr_project" value="${escHtml(r.profileName||'')}" ${pending?'':'readonly'}>
+    <label>Profile type</label>${pending
+      ? `<select id="f_cr_tag"><option value="">— none —</option>${ALL_PROFILES.map(pr=>`<option value="${escHtml(pr.name)}" ${r.profileTag===pr.name?'selected':''}>${escHtml(pr.name)}</option>`).join('')}</select>`
+      : `<input value="${escHtml(r.profileTag||'—')}" readonly>`}
+    <label>Client</label><input id="f_cr_client" value="${escHtml(r.clientName||'')}" ${pending?'':'readonly'}>
+    <label>Sales</label><input value="${escHtml(userName(r.salesOwnerId))}" readonly>
+    <label>Developer</label>${pending
+      ? `<select id="f_cr_dev"><option value="">— unassigned —</option>${devs.map(u=>`<option value="${u.id}" ${r.assignedDevId===u.id?'selected':''}>${u.name} (${u.role})</option>`).join('')}</select>`
+      : `<input value="${escHtml(userName(r.assignedDevId))}" readonly>`}
+    <label>Status</label>${pending
+      ? `<select id="f_cr_pstatus">${ALL_STATUSES.map(s=>`<option ${pStatus===s.name?'selected':''}>${s.name}</option>`).join('')}</select>`
+      : `<input value="${escHtml(pStatus)}" readonly>`}
+    <label>Priority</label>${pending
+      ? `<select id="f_cr_priority">${PRIORITIES.map(p=>`<option ${(r.priority||'Medium')===p?'selected':''}>${p}</option>`).join('')}</select>`
+      : `<input value="${escHtml(r.priority||'Medium')}" readonly>`}
+    <label>Deadline</label><input id="f_cr_deadline" type="date" value="${r.deadline||''}" ${pending?'':'readonly'}>
+    <label>Budget</label><input id="f_cr_budget" type="number" value="${r.budget||''}" ${pending?'':'readonly'}>
+    ${pending ? `
+    <label>Team Lead</label><select id="f_cr_lead"><option value="">— none —</option>${leads.map(u=>`<option value="${u.id}" ${r.teamLeadId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
+    <label>Project Manager</label><select id="f_cr_pm"><option value="">— none —</option>${pms.map(u=>`<option value="${u.id}" ${r.assignedPMId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
+    ` : ''}
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Close</button>
+      ${pending ? `
+        <button class="btn-cancel" style="color:var(--red);" onclick="saveClientRequestReview('${id}','reject')">Reject</button>
+        <button class="btn-cancel" onclick="saveClientRequestReview('${id}','save')">Save edits</button>
+        <button class="btn-save" onclick="saveClientRequestReview('${id}','approve')">Approve</button>
+      ` : ''}
+    </div>
+  `);
+}
+function clientRequestFieldsFromForm(){
+  return {
+    clientName: val('f_cr_client').trim(),
+    profileName: val('f_cr_project').trim(),
+    profileTag: val('f_cr_tag'),
+    budget: Number(val('f_cr_budget'))||0,
+    priority: val('f_cr_priority') || 'Medium',
+    deadline: val('f_cr_deadline'),
+    projectStatus: val('f_cr_pstatus') || defaultProjectStatus(),
+    assignedDevId: val('f_cr_dev'),
+    teamLeadId: val('f_cr_lead'),
+    assignedPMId: val('f_cr_pm')
+  };
+}
+async function findOrCreateClientId(req){
+  const name = (req.clientName||'').trim();
+  const existing = ALL_CLIENTS.find(c=>(c.name||'').trim().toLowerCase()===name.toLowerCase());
+  if(existing) return existing.id;
+  const ref = await db.collection('clients').add({
+    name,
+    companyProfile: req.companyProfile || req.profileTag || '',
+    assignedSalesRep: req.salesOwnerId||''
+  });
+  return ref.id;
+}
+async function saveClientRequestReview(id, action){
+  if(!canReviewClientRequests()) return;
+  const req = ALL_CLIENT_REQUESTS.find(r=>r.id===id);
+  if(!req) return;
+  const fields = clientRequestFieldsFromForm();
+  if(!fields.clientName || !fields.profileName){
+    alert('Client name and project name are required.');
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  const reviewer = CURRENT_USER.uid || CURRENT_USER.id;
+  if(action==="save"){
+    if(req.status!=="pending"){ alert('Only pending entries can be edited.'); return; }
+    await db.collection('clientRequests').doc(id).update(fields);
+    closeModal(); navigate('clientApproval');
+    return;
+  }
+  if(action==="reject"){
+    if(req.status!=="pending"){ alert('This entry was already reviewed.'); return; }
+    if(!confirm('Reject this entry? It will NOT be added to All Projects.')) return;
+    await db.collection('clientRequests').doc(id).update({
+      status:'rejected',
+      reviewedAt:today,
+      reviewedBy:reviewer,
+      projectId:null
+    });
+    closeModal();
+    alert('Rejected. This project was not added to All Projects.');
+    navigate('clientApproval');
+    return;
+  }
+  if(action==="approve"){
+    if(req.status!=="pending"){ alert('This entry was already reviewed.'); return; }
+    if(req.projectId){ alert('This entry is already approved and linked to All Projects.'); return; }
+    if(!confirm('Approve and add this project to All Projects?')) return;
+    const merged = Object.assign({}, req, fields);
+    const clientId = await findOrCreateClientId(merged);
+    const pmId = merged.assignedPMId || (ALL_USERS.find(u=>u.role==="Project Manager")||{}).id || reviewer;
+    const projectDoc = {
+      profileName: merged.profileName,
+      clientId,
+      teamLeadId: merged.teamLeadId||'',
+      assignedDevId: merged.assignedDevId||'',
+      salesOwnerId: merged.salesOwnerId||'',
+      assignedPMId: pmId,
+      status: merged.projectStatus || defaultProjectStatus(),
+      priority: merged.priority||'Medium',
+      startDate: today,
+      deadline: merged.deadline||'',
+      budget: merged.budget||0,
+      profileTags: merged.profileTag ? [merged.profileTag] : [],
+      developingStage: defaultProjectStage(),
+      extensions: 0,
+      reviewRating: null,
+      createdAt: today
+    };
+    const projectRef = await db.collection('projects').add(projectDoc);
+    await db.collection('clientRequests').doc(id).update(Object.assign({}, fields, {
+      status:'approved', reviewedAt:today, reviewedBy:reviewer,
+      clientId, projectId: projectRef.id
+    }));
+    closeModal();
+    alert('Approved! Project is now in All Projects.');
+    navigate('clientApproval');
+  }
 }
 
 /* ============================================================

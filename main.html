@@ -82,6 +82,14 @@
   .err{color:var(--red);font-size:12px;margin-top:10px;min-height:0;}
   .ok{font-size:12px;color:var(--green);margin-top:6px;}
   .setup-note{font-size:11px;color:var(--slate);background:var(--paper-2);border-radius:6px;padding:8px 10px;margin-top:10px;line-height:1.5;}
+  .pw-wrap{position:relative;}
+  .pw-wrap input{padding-right:54px;}
+  .pw-toggle{
+    position:absolute;right:8px;top:50%;transform:translateY(-50%);
+    background:transparent;color:var(--teal-dark);font-size:11px;font-weight:600;
+    padding:4px 6px;border-radius:4px;
+  }
+  .pw-toggle:hover{color:var(--teal);}
 
   @media(max-width:480px){
     #loginScreen{align-items:flex-start;padding:16px 12px 28px;}
@@ -114,7 +122,10 @@
       <label>Email</label>
       <input id="loginEmail" type="email" placeholder="you@doptortech.com" autocomplete="username">
       <label>Password</label>
-      <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
+      <div class="pw-wrap">
+        <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
+        <button type="button" class="pw-toggle" id="pwToggleBtn" onclick="toggleLoginPw()" aria-label="Show password">Show</button>
+      </div>
       <button class="btn btn-primary" id="signInBtn" onclick="doLogin()">Sign in</button>
       <div style="text-align:right;margin-top:8px;">
         <a href="#" style="font-size:12px;color:var(--teal-dark);text-decoration:none;" onclick="doForgotPassword();return false;">Forgot password?</a>
@@ -402,6 +413,14 @@ auth.onAuthStateChanged(async (fbUser) => {
   }
 });
 
+function toggleLoginPw(){
+  const inp = document.getElementById("loginPass");
+  const btn = document.getElementById("pwToggleBtn");
+  const show = inp.type === "password";
+  inp.type = show ? "text" : "password";
+  btn.textContent = show ? "Hide" : "Show";
+  btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
+}
 document.getElementById("loginPass").addEventListener("keydown", e => {
   if(e.key === "Enter") doLogin();
 });
