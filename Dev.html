@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Doptor Tech — Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#20222A; --paper:#F5F3EE; --paper-2:#ECE9E1; --panel:#FFFFFF;
+    --charcoal:#1B1D24; --charcoal-2:#252832;
+    --teal:#2AA9A0; --teal-dark:#1E7F78;
+    --amber:#E0A526; --red:#C6483C; --green:#4C9A5B;
+    --slate:#7A7F8C; --line:#DCD8CE; --line-dark:#33363F;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;}
+  h1,h2,h3,.disp{font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  button{font-family:'Inter',sans-serif;cursor:pointer;border:none;border-radius:6px;}
+  input,select,textarea{font-family:'Inter',sans-serif;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:#fff;color:var(--ink);width:100%;}
+  textarea{resize:vertical;min-height:60px;}
+  #loadError{display:none;background:#3a1f1f;border:1px solid var(--red);color:#f2c9c4;padding:16px 20px;margin:20px;border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.6;white-space:pre-wrap;}
+  #loadError b{color:#fff;font-family:'Inter',sans-serif;display:block;margin-bottom:8px;font-size:14px;}
+  #loadError button{margin-top:10px;background:var(--red);color:#fff;padding:8px 14px;border-radius:6px;font-size:12px;}
+  label{font-size:12px;color:var(--slate);display:block;margin:10px 0 4px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+
+  /* ---- Login ---- */
+  #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--charcoal);padding:24px 16px;}
+  .login-card{background:var(--paper);width:min(360px,100%);padding:36px 32px;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+  .login-card .stamp{width:34px;height:34px;background:var(--teal);border-radius:6px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-family:'Space Grotesk',sans-serif;}
+  .login-card h1{font-size:20px;margin:0 0 2px;}
+  .login-card p.sub{color:var(--slate);font-size:13px;margin:0 0 20px;}
+  .btn{padding:10px 16px;border-radius:6px;font-weight:600;font-size:13px;}
+  .btn-primary{background:var(--charcoal);color:#fff;width:100%;margin-top:16px;}
+  .btn-primary:hover{background:var(--teal-dark);}
+  .err{color:var(--red);font-size:12px;margin-top:10px;}
+
+  html{-webkit-text-size-adjust:100%;}
+  html,body{max-width:100%;}
+
+  /* ---- App shell ---- */
+  #app{display:none;min-height:100vh;}
+  #app.is-on{display:block;padding-left:220px;}
+  #sidebar{background:var(--charcoal);color:#EDEBE4;padding:20px 14px;display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:30;height:100vh;height:100dvh;width:220px;overflow:hidden;}
+  #sidebar .stamp{width:30px;height:30px;background:var(--teal);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Space Grotesk',sans-serif;margin-bottom:6px;}
+  #sidebar .brand{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:2px;}
+  #sidebar .brand-sub{color:var(--slate);font-size:11px;margin-bottom:8px;}
+  .user-id{margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid var(--line-dark);}
+  .user-id .user-name{color:#EDEBE4;font-size:13px;font-weight:600;line-height:1.3;}
+  .user-id .user-mail{color:var(--slate);font-size:11px;margin-top:3px;word-break:break-all;line-height:1.4;}
+  .nav-btn{display:block;width:100%;text-align:left;background:transparent;color:#C9C7C0;padding:9px 10px;border-radius:6px;font-size:13px;margin-bottom:2px;font-weight:500;}
+  .nav-btn:hover{background:var(--charcoal-2);}
+  .nav-btn.active{background:var(--teal);color:#fff;}
+  #whoami{margin-top:auto;padding-top:14px;border-top:1px solid var(--line-dark);font-size:12px;color:var(--slate);}
+  #whoami b{color:#EDEBE4;display:block;font-size:13px;}
+  #logoutBtn{margin-top:8px;background:var(--charcoal-2);color:#EDEBE4;font-size:12px;padding:7px 10px;width:100%;}
+
+  .app-body{min-width:0;max-width:100%;}
+  #main{padding:26px 34px;min-width:0;max-width:100%;}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;margin:0 0 10px;}
+  .table-scroll table{min-width:620px;}
+  .mobile-bar{display:none;}
+  .nav-overlay{display:none;position:fixed;inset:0;background:rgba(12,13,16,.5);z-index:55;}
+  .nav-overlay.show{display:block;}
+  .sidebar-close{display:none;}
+  body.nav-open{overflow:hidden;}
+
+  .topline{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;border-bottom:2px solid var(--ink);padding-bottom:12px;gap:10px;flex-wrap:wrap;}
+  .topline h2{margin:0;font-size:22px;}
+  .topline .role-badge{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--teal-dark);font-weight:700;}
+  .add-btn{background:var(--teal);color:#fff;padding:9px 14px;font-size:13px;font-weight:600;}
+  .add-btn:hover{background:var(--teal-dark);}
+
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px;}
+  .stat-card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:6px;padding:12px 16px;min-width:0;}
+  .stat-card.warn{border-left-color:var(--amber);}
+  .stat-card.danger{border-left-color:var(--red);}
+  .stat-card .num{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;}
+  .stat-card .lbl{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:.04em;}
+
+  /* Leaderboard dashboard */
+  .lb-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+  .lb-header .lb-sub{color:var(--slate);font-size:12px;margin-top:2px;}
+  .lb-header select{width:auto;display:inline-block;padding:7px 10px;font-size:12px;}
+  .top-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;}
+  @media(max-width:820px){.top-row{grid-template-columns:1fr;}}
+  .top-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden;}
+  .top-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--teal),var(--amber));}
+  .top-card .badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--teal-dark);background:rgba(42,169,160,.12);padding:4px 9px;border-radius:20px;margin-bottom:12px;}
+  .top-card .who{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .top-card .name{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;}
+  .top-card .sub{font-size:11px;color:var(--slate);}
+  .top-card .stats{display:flex;gap:10px;flex-wrap:wrap;}
+  .top-card .stat-pill{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:8px 12px;flex:1;min-width:90px;}
+  .top-card .stat-pill .k{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);}
+  .top-card .stat-pill .v{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin-top:2px;}
+  .top-card.empty-card{display:flex;align-items:center;justify-content:center;color:var(--slate);font-size:13px;min-height:120px;}
+  .avatar{width:38px;height:38px;border-radius:50%;background:var(--charcoal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;font-family:'Space Grotesk',sans-serif;flex-shrink:0;}
+  .avatar.sm{width:28px;height:28px;font-size:11px;}
+  .lb-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+  @media(max-width:900px){.lb-grid{grid-template-columns:1fr;}}
+  .lb-panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 16px 8px;}
+  .lb-panel h3{margin:0 0 2px;font-size:14px;}
+  .lb-panel .lb-panel-sub{font-size:11px;color:var(--slate);margin-bottom:12px;}
+  .lb-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line);}
+  .lb-row:last-child{border-bottom:none;}
+  .rank-badge{width:26px;text-align:center;font-size:13px;font-weight:700;color:var(--slate);flex-shrink:0;}
+  .rank-badge.r1{font-size:16px;}
+  .lb-row-name{flex:1;min-width:0;}
+  .lb-row-name .n{font-size:13px;font-weight:600;}
+  .lb-row-name .n a{color:var(--ink);text-decoration:none;}
+  .lb-row-name .n a:hover{color:var(--teal-dark);text-decoration:underline;}
+  .lb-row-name .t{font-size:11px;color:var(--slate);}
+  .lb-row-metric{text-align:right;flex-shrink:0;}
+  .lb-row-metric .v{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;}
+  .lb-row-metric .l{font-size:9px;color:var(--slate);text-transform:uppercase;}
+  .progress-track{background:var(--line);height:5px;border-radius:3px;margin-top:5px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--teal);border-radius:3px;}
+  .lb-mini-stats{display:flex;gap:10px;font-size:11px;color:var(--slate);flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:280px;}
+  .lb-mini-stats b{color:var(--ink);font-family:'IBM Plex Mono',monospace;}
+
+  table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:8px;overflow:hidden;box-shadow:0 1px 0 var(--line);}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);padding:10px 12px;border-bottom:2px solid var(--ink);background:var(--paper-2);}
+  td{padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#FAF9F6;}
+  .tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+  .tag.status-Not-Started{background:#E9E7E1;color:#5A5D66;}
+  .tag.status-In-Progress{background:#DDF0EE;color:var(--teal-dark);}
+  .tag.status-Waiting-on-Client{background:#FBEACB;color:#8A6512;}
+  .tag.status-In-Review{background:#E4E1F5;color:#5B4E9E;}
+  .tag.status-Completed{background:#DEF0E1;color:var(--green);}
+  .tag.status-On-Hold{background:#EFEFEF;color:#888;}
+  .tag.pri-High{background:#F6DAD6;color:var(--red);}
+  .tag.pri-Medium{background:#FBEACB;color:#8A6512;}
+  .tag.pri-Low{background:#E4E4E4;color:#666;}
+  .overdue{color:var(--red);font-weight:700;}
+  .row-actions button{background:transparent;color:var(--slate);font-size:12px;padding:3px 6px;}
+  .row-actions button:hover{color:var(--ink);text-decoration:underline;}
+  .empty{padding:30px;text-align:center;color:var(--slate);font-size:13px;}
+
+  /* modal */
+  #modalBg{display:none;position:fixed;inset:0;background:rgba(20,21,26,.5);align-items:center;justify-content:center;z-index:50;}
+  #modal{background:#fff;width:460px;max-height:88vh;overflow-y:auto;border-radius:10px;padding:24px 26px;}
+  #modal h3{margin:0 0 4px;font-size:17px;}
+  .modal-actions{display:flex;gap:8px;margin-top:18px;}
+  .modal-actions .btn-cancel{background:var(--paper-2);color:var(--ink);flex:1;padding:9px;}
+  .modal-actions .btn-save{background:var(--teal);color:#fff;flex:1;padding:9px;font-weight:600;}
+  .setup-note{font-size:11px;color:var(--slate);background:var(--paper-2);border-radius:6px;padding:8px 10px;margin-top:10px;line-height:1.5;}
+  .live-countdown{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--teal-dark);white-space:nowrap;}
+  .live-countdown.overdue{color:var(--red);font-weight:700;}
+  .stage-select{padding:5px 7px;font-size:12px;width:auto;min-width:140px;}
+
+  /* ---- Responsive: tablet + mobile ---- */
+  @media(max-width:1100px){
+    #app.is-on{display:block;padding-left:0;}
+    .mobile-bar{
+      display:flex;align-items:center;gap:10px;
+      position:sticky;top:0;z-index:40;
+      background:var(--charcoal);color:#EDEBE4;
+      padding:10px 14px;min-height:52px;
+    }
+    .menu-btn{
+      width:40px;height:40px;flex-shrink:0;
+      background:var(--charcoal-2);color:#fff;font-size:20px;line-height:1;border-radius:8px;
+    }
+    .mobile-bar .mb-stamp{
+      width:26px;height:26px;background:var(--teal);border-radius:5px;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;font-family:'Space Grotesk',sans-serif;font-size:11px;color:#fff;
+    }
+    .mobile-bar .mb-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;}
+    #sidebar{
+      position:fixed !important;top:0;left:0;bottom:0;z-index:60;
+      width:min(280px,88vw) !important;height:100dvh !important;
+      transform:translateX(-105%);
+      transition:transform .22s ease;
+      overflow-y:auto;
+      pointer-events:none;
+    }
+    #sidebar.open{transform:translateX(0);pointer-events:auto;}
+    .sidebar-close{
+      display:flex;align-items:center;justify-content:center;align-self:flex-end;margin:-4px 0 8px auto;
+      background:var(--charcoal-2);color:#EDEBE4;width:32px;height:32px;font-size:16px;
+    }
+    #loginScreen{align-items:flex-start;padding:20px 14px 32px;}
+    .login-card{padding:28px 20px;}
+    #main{padding:16px 14px 28px;}
+    .topline h2{font-size:18px;}
+    .top-row,.lb-grid{grid-template-columns:1fr;}
+    #modalBg{padding:12px;align-items:flex-start;}
+    #modal{width:min(460px,100%);padding:20px 16px;max-height:min(86vh,100%);}
+    .lb-mini-stats{max-width:100%;justify-content:flex-start;}
+    input,select,textarea,.btn,.nav-btn{font-size:16px;}
+    .stage-select{min-width:0;max-width:100%;}
+    .lb-header select{width:100%;max-width:220px;}
+  }
+
+  @media(max-width:640px){
+    .login-card{padding:22px 16px;}
+    .stat-row{grid-template-columns:1fr 1fr;gap:8px;}
+    .stat-card{padding:10px 12px;}
+    .stat-card .num{font-size:20px;}
+    .topline{align-items:stretch;flex-direction:column;}
+    .topline h2{font-size:17px;}
+    .add-btn{width:100%;text-align:center;}
+    .top-card{padding:14px;}
+    .lb-panel{padding:12px 10px 6px;}
+    .lb-row{flex-wrap:wrap;align-items:flex-start;}
+    .lb-mini-stats{width:100%;margin-top:4px;}
+    .modal-actions{flex-direction:column;}
+    #main{padding:12px 10px 24px;}
+    .live-countdown{white-space:normal;}
+  }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="stamp">DT</div>
+    <h1>Doptor Tech Ledger</h1>
+    <p class="sub">Developer portal</p>
+    <label>Email</label>
+    <input id="loginEmail" type="email" placeholder="you@doptortech.com">
+    <label>Password</label>
+    <input id="loginPass" type="password" placeholder="••••••••">
+    <button class="btn btn-primary" onclick="doLogin()">Sign in</button>
+    <div style="text-align:right;margin-top:8px;">
+      <a href="#" style="font-size:12px;color:var(--teal-dark);text-decoration:none;" onclick="doForgotPassword();return false;">Forgot password?</a>
+    </div>
+    <div class="err" id="loginErr"></div>
+    <div id="loginMsg" style="font-size:12px;color:var(--green);margin-top:6px;"></div>
+    <div class="setup-note">First run? Sign in with the Admin email/password configured by your CEO. If no account exists yet for that email, it will be created automatically and granted Admin rights.</div>
+  </div>
+</div>
+
+<div class="nav-overlay" id="navOverlay" onclick="closeNav()"></div>
+<div id="app">
+  <div id="sidebar">
+    <button type="button" class="sidebar-close" onclick="closeNav()" aria-label="Close menu">✕</button>
+    <div class="stamp">DT</div>
+    <div class="brand">Doptor Tech</div>
+    <div class="brand-sub">Developer</div>
+    <div id="userId" class="user-id">
+      <div class="user-name" id="userName"></div>
+      <div class="user-mail" id="userMail"></div>
+    </div>
+    <div id="navLinks"></div>
+    <div id="whoami"></div>
+    <button id="logoutBtn" onclick="doLogout()">Sign out</button>
+  </div>
+  <div class="app-body">
+    <div class="mobile-bar">
+      <button type="button" class="menu-btn" onclick="openNav()" aria-label="Open menu">☰</button>
+      <span class="mb-stamp">DT</span>
+      <span class="mb-title">Doptor Tech</span>
+    </div>
+    <div id="loadError"></div>
+    <div id="main"></div>
+  </div>
+</div>
+
+<div id="modalBg"><div id="modal"></div></div>
+
+<script src="local-backend.js?v=20260829"></script>
+<script>
+const auth = firebase.auth();
+const db = firebase.firestore();
+const secondaryApp = firebase.initializeApp({}, "Secondary");
+const secondaryAuth = secondaryApp.auth();
+
+/* ============================================================
+   HARDCODED ADMIN (Account Owner)
+   This is the CEO / super-authority account. On first sign-in,
+   if no user record exists yet for this UID, one is created
+   automatically with role "Admin".
+   ============================================================ */
+const ADMIN_EMAIL = "mdabdulquiyumbadol@gmail.com";
+const ADMIN_PASS  = "1234567";
+const ADMIN_UID   = "7tFGqtHIuMdJrLEEvBD7ElfNbPC2"; // fill in after first login (see console)
+
+/* Company Admins — first sign-in creates Auth + Firestore (role: Admin). Not Super Admin. */
+const COMPANY_ADMIN_ACCOUNTS = [
+  { name:"Sanaul", email:"sanaul.doptortech@gmail.com", pass:"12345678" }
+];
+function companyAdminByEmail(email){
+  const e = (email||"").trim().toLowerCase();
+  return COMPANY_ADMIN_ACCOUNTS.find(a => a.email.toLowerCase() === e) || null;
+}
+
+/* ============================================================
+   SUPER ADMIN (SA) — the ADMIN_UID account above.
+   - SA has full authority over everything, including other
+     "Admin" role accounts that SA itself creates/promotes.
+   - SA's own name/email/identity is never shown to anyone
+     else, including other Admins — everyone else just sees
+     that "an Admin" exists, with no further detail.
+   - Admins that SA appoints cannot view, edit, restrict, or
+     delete the SA account, and cannot see who it is.
+   ============================================================ */
+function isSA(uid){ return uid === ADMIN_UID; }
+function viewerIsSA(){ return CURRENT_USER && CURRENT_USER.uid === ADMIN_UID; }
+// Use this instead of a raw name/email anywhere a user might be displayed.
+function displayNameFor(u){
+  if(!u) return "—";
+  const targetUid = u.uid || u.id;
+  if(isSA(targetUid) && !viewerIsSA()){
+    return "Admin"; // identity hidden — only "there is an admin" is visible
+  }
+  return u.name || "—";
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let CURRENT_USER = null;   // {uid, name, role, team, ...}
+let ALL_USERS = [];
+let ALL_CLIENTS = [];
+let ALL_PROJECTS = [];
+let ALL_PROFILES = [];
+let ALL_STAGES = [];        // Developing Stages, Admin-managed (System Management)
+let ALL_STATUSES = [];      // Project Statuses, Admin-managed (System Management) — each {name, isDelivery, isDelayed}
+let ALL_UPDATES = [];       // cached recent daily updates, used for "last update" lookups
+let COMPANY_SETTINGS = { salesTarget:0, deliveryTarget:0 };  // company-wide targets, Admin-set
+let currentView = "dashboard";
+let systemTab = "targets";  // which sub-tab is open on the System Management page
+let DEV_DETAIL_ID = null;   // which developer's detail page is open (Admin/PM drill-down only)
+let dashboardMonth = new Date().toISOString().slice(0,7); // "YYYY-MM", switchable on the dashboard
+const ROLES = ["Admin","Project Manager","Team Lead","Developer","Freelancer","Sales"];
+const THIS_PAGE = "dev";
+const PAGE_ROLES = {
+  company: ["Admin"],
+  pm: ["Project Manager","Team Lead"],
+  seller: ["Sales"],
+  dev: ["Developer","Freelancer"]
+};
+const PAGE_FILES = {
+  Admin: "comapani.html",
+  "Project Manager": "Project manager.html",
+  "Team Lead": "Project manager.html",
+  Sales: "Seller.html",
+  Developer: "Dev.html",
+  Freelancer: "Dev.html"
+};
+function allowedOnThisPage(role){ return (PAGE_ROLES[THIS_PAGE]||[]).includes(role); }
+function thisPortalName(){
+  return THIS_PAGE==="company" ? "Company (Admin)"
+    : THIS_PAGE==="pm" ? "Project Manager"
+    : THIS_PAGE==="seller" ? "Sales"
+    : "Developer";
+}
+// One-time seed data only — written to the 'statuses' collection the first
+// time the app runs against a project with none defined yet. After that,
+// ALL_STATUSES (Admin-managed under System Management) is the source of truth.
+const DEFAULT_STATUSES = [
+  { name:"Not Started",        isDelivery:false, isDelayed:false },
+  { name:"In Progress",        isDelivery:false, isDelayed:false },
+  { name:"Waiting on Client",  isDelivery:false, isDelayed:true  },
+  { name:"In Review",          isDelivery:false, isDelayed:false },
+  { name:"Completed",          isDelivery:true,  isDelayed:false },
+  { name:"On Hold",            isDelivery:false, isDelayed:true  }
+];
+const PRIORITIES = ["High","Medium","Low"];
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+function isMissingUserErr(e){
+  const code = (e && e.code) || "";
+  const msg = String((e && e.message) || "").toLowerCase();
+  return code === "auth/user-not-found"
+    || code === "auth/invalid-login-credentials"
+    || code === "auth/invalid-credential"
+    || code === "auth/wrong-password"
+    || msg.includes("invalid-credential")
+    || msg.includes("invalid-login-credentials")
+    || msg.includes("user-not-found")
+    || msg.includes("wrong-password");
+}
+async function createAuthUserOnSecondary(email, pass){
+  try{
+    await secondaryAuth.createUserWithEmailAndPassword(email, pass);
+  }catch(e){
+    if(e.code !== "auth/email-already-in-use") throw e;
+  }finally{
+    try{ await secondaryAuth.signOut(); }catch(_){}
+  }
+}
+async function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = "";
+  if(!email || !pass){ errEl.textContent = "Enter email and password."; return; }
+  const canSeed = false;
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+    return;
+  }catch(e){
+    if(!canSeed || !isMissingUserErr(e)){
+      errEl.textContent = e.message || String(e);
+      return;
+    }
+  }
+  try{
+    await createAuthUserOnSecondary(email, pass);
+    await auth.signInWithEmailAndPassword(email, pass);
+  }catch(e2){
+    errEl.textContent = (e2.code === "auth/email-already-in-use" || isMissingUserErr(e2))
+      ? "This email already has a different password. Ask an Admin to set a new one from User Manage."
+      : (e2.message || String(e2));
+  }
+}
+function doLogout(){ auth.signOut().then(()=> location.href = "main.html"); }
+
+async function doForgotPassword(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const errEl = document.getElementById('loginErr');
+  const msgEl = document.getElementById('loginMsg');
+  errEl.textContent = ""; msgEl.textContent = "";
+  if(!email){ errEl.textContent = "Enter your email above first, then click 'Forgot password?'"; return; }
+  try{
+    await auth.sendPasswordResetEmail(email);
+    msgEl.textContent = "Local login has no email reset. Ask a Company Admin to set a new password from User Manage.";
+  }catch(e){
+    // Don't reveal whether an account exists for this email — same message either way.
+    msgEl.textContent = "Local login has no email reset. Ask a Company Admin to set a new password from User Manage.";
+  }
+}
+
+function showLoadError(title, err){
+  const el = document.getElementById('loadError');
+  const code = (err && err.code) ? err.code : 'unknown';
+  const msg = (err && err.message) ? err.message : String(err);
+  el.style.display = 'block';
+  el.innerHTML = `<b>${title}</b>Error code: ${code}\n${msg}\n\n` +
+    (code === 'permission-denied'
+      ? `Could not load data for this account. Try signing out and back in, or ask an Admin.`
+      : `Check the browser console (F12) for more detail, or contact your Admin.`) +
+    `\n\nYour account: ${(CURRENT_USER && CURRENT_USER.email) || (auth.currentUser && auth.currentUser.email) || 'unknown'}`;
+  el.innerHTML += '<br><button onclick="doLogout()">Sign out</button>';
+}
+
+auth.onAuthStateChanged(async (fbUser) => {
+  document.getElementById('loadError').style.display = 'none';
+  if(!fbUser){
+    stopRealtimeSync();
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('app').classList.remove('is-on');
+    return;
+  }
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').classList.add('is-on');
+  try{
+    const isSaEmail = fbUser.email && fbUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    const companyAdmin = companyAdminByEmail(fbUser.email);
+    const uref = db.collection('users').doc(fbUser.uid);
+    let data = null;
+    try{
+      const usnap = await uref.get();
+      if(usnap.exists) data = usnap.data();
+    }catch(readErr){
+      console.warn("profile read failed", readErr);
+    }
+    const seedDoc = companyAdmin
+      ? { name: companyAdmin.name, role:"Admin", team:"", workHours:"", timezone:"", contact: companyAdmin.email, active:true, profiles:[] }
+      : isSaEmail
+      ? { name:"Admin", role:"Admin", team:"", workHours:"", timezone:"", contact: fbUser.email, active:true, profiles:[] }
+      : null;
+    if(!data){
+      if(!seedDoc){
+        showLoadError("No profile record found", {code:'no-profile', message:"Your account exists in Auth but has no profile record yet. Ask an Admin to create your user record with your UID: " + fbUser.uid});
+        return;
+      }
+      data = { ...seedDoc };
+      try{ await uref.set(seedDoc); }catch(writeErr){ console.warn("profile write failed", writeErr); }
+    }
+    if(companyAdmin){
+      const patch = {};
+      if(data.role !== "Admin") patch.role = "Admin";
+      if(!data.name) patch.name = companyAdmin.name;
+      if(data.active === false) patch.active = true;
+      if(data.banned === true) patch.banned = false;
+      if(Object.keys(patch).length){
+        data = { ...data, ...patch };
+        try{ await uref.set(patch, { merge:true }); }catch(_){}
+      }
+    }
+    if(!data){
+      showLoadError("Account record missing", {code:'deleted', message:"Your user record no longer exists. Contact your Admin if this is a mistake."});
+      auth.signOut();
+      return;
+    }
+    if((data.active === false || data.banned === true) && !companyAdmin){
+      showLoadError("Account restricted", {code:'restricted', message:"This account has been restricted by an Admin."});
+      auth.signOut();
+      return;
+    }
+    CURRENT_USER = { uid: fbUser.uid, email: fbUser.email, ...data };
+    if(!allowedOnThisPage(CURRENT_USER.role)){
+      const dest = PAGE_FILES[CURRENT_USER.role];
+      if(dest){ location.replace(dest); return; }
+      await auth.signOut();
+      const errEl = document.getElementById('loginErr');
+      if(errEl) errEl.textContent = "This account is " + CURRENT_USER.role + ". It cannot enter the " + thisPortalName() + " portal. Use your own login profile.";
+      return;
+    }
+    await loadAll();
+    await seedDefaultStatusesIfNeeded();
+    renderShell();
+    navigate('dashboard');
+    setupRealtimeSync();
+  }catch(err){
+    console.error('Auth/load failure:', err);
+    showLoadError("Couldn't load your data", err);
+  }
+});
+
+/* ============================================================
+   DATA LOADING (client-side role filtering — pair with Firestore
+   security rules server-side for real enforcement)
+   ============================================================ */
+async function loadAll(){
+  const [u,c,p,pr,st,stat] = await Promise.all([
+    db.collection('users').get(),
+    db.collection('clients').get(),
+    db.collection('projects').get(),
+    db.collection('profiles').get(),
+    db.collection('stages').get(),
+    db.collection('statuses').get()
+  ]);
+  ALL_USERS = u.docs.map(d=>({id:d.id,...d.data()}));
+  ALL_CLIENTS = c.docs.map(d=>({id:d.id,...d.data()}));
+  ALL_PROJECTS = p.docs.map(d=>({id:d.id,...d.data()}));
+  ALL_PROFILES = pr.docs.map(d=>({id:d.id,...d.data()}));
+  ALL_STAGES = st.docs.map(d=>({id:d.id,...d.data()}));
+  ALL_STATUSES = stat.docs.map(d=>({id:d.id,...d.data()}));
+  // Daily updates are fetched separately (capped) so "last update" lookups
+  // work on the dashboard without pulling the entire history every load.
+  try{
+    const us = await db.collection('dailyUpdates').orderBy('date','desc').limit(500).get();
+    ALL_UPDATES = us.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){ ALL_UPDATES = []; }
+  try{
+    const settingsSnap = await db.collection('settings').doc('company').get();
+    COMPANY_SETTINGS = settingsSnap.exists ? settingsSnap.data() : { salesTarget:0, deliveryTarget:0 };
+  }catch(e){ COMPANY_SETTINGS = { salesTarget:0, deliveryTarget:0 }; }
+}
+// Runs once, the first time anyone loads the app after this feature ships:
+// if no Project Statuses have been defined yet under System Management,
+// write the previous hardcoded list in as a starting point (with the same
+// "Completed = delivery" / "Waiting on Client, On Hold = delayed" flags it
+// always implicitly had) so existing projects keep working exactly as
+// before. From then on Admin fully owns this list — rename, add, remove,
+// re-flag — under System Management → Statuses.
+async function seedDefaultStatusesIfNeeded(){
+  if(ALL_STATUSES.length) return;
+  try{
+    const batch = db.batch();
+    DEFAULT_STATUSES.forEach(s=>{
+      const ref = db.collection('statuses').doc();
+      batch.set(ref, s);
+    });
+    await batch.commit();
+    const stat = await db.collection('statuses').get();
+    ALL_STATUSES = stat.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){ console.error('status seed failed', e); }
+}
+/* ============================================================
+   REAL-TIME SYNC
+   Firestore onSnapshot listeners keep every collection live, so any
+   change (a project's stage, a new update, a target, etc.) from
+   anyone shows up for everyone immediately — no manual refresh.
+   ============================================================ */
+let REALTIME_UNSUBS = [];
+function stopRealtimeSync(){
+  REALTIME_UNSUBS.forEach(u=>{ try{ u(); }catch(e){} });
+  REALTIME_UNSUBS = [];
+}
+function setupRealtimeSync(){
+  stopRealtimeSync();
+  const liveCollections = [
+    ['users', list=>ALL_USERS=list],
+    ['clients', list=>ALL_CLIENTS=list],
+    ['projects', list=>ALL_PROJECTS=list],
+    ['profiles', list=>ALL_PROFILES=list],
+    ['stages', list=>ALL_STAGES=list],
+    ['statuses', list=>ALL_STATUSES=list],
+  ];
+  liveCollections.forEach(([coll, setter])=>{
+    const unsub = db.collection(coll).onSnapshot(snap=>{
+      setter(snap.docs.map(d=>({id:d.id,...d.data()})));
+      if(CURRENT_USER && currentView) navigate(currentView);
+    }, err=>console.error(coll+' live sync error', err));
+    REALTIME_UNSUBS.push(unsub);
+  });
+  const unsubUpdates = db.collection('dailyUpdates').orderBy('date','desc').limit(500).onSnapshot(snap=>{
+    ALL_UPDATES = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(CURRENT_USER && currentView) navigate(currentView);
+  }, err=>{ ALL_UPDATES = []; });
+  REALTIME_UNSUBS.push(unsubUpdates);
+  const unsubSettings = db.collection('settings').doc('company').onSnapshot(doc=>{
+    COMPANY_SETTINGS = doc.exists ? doc.data() : { salesTarget:0, deliveryTarget:0 };
+    if(CURRENT_USER && currentView) navigate(currentView);
+  }, err=>console.error('settings live sync error', err));
+  REALTIME_UNSUBS.push(unsubSettings);
+}
+function latestUpdateForProject(projectId){
+  return ALL_UPDATES.filter(u=>u.projectId===projectId).sort((a,b)=> (b.date||'').localeCompare(a.date||''))[0] || null;
+}
+function monthOf(dateStr){ return dateStr ? String(dateStr).slice(0,7) : null; }
+
+function visibleProjects(){
+  const r = CURRENT_USER.role;
+  if(r==="Admin" || r==="Project Manager") return ALL_PROJECTS;
+  if(r==="Team Lead") return ALL_PROJECTS.filter(p=>p.teamLeadId===CURRENT_USER.uid);
+  if(r==="Developer" || r==="Freelancer") return ALL_PROJECTS.filter(p=>p.assignedDevId===CURRENT_USER.uid);
+  if(r==="Sales") return ALL_PROJECTS.filter(p=>p.salesOwnerId===CURRENT_USER.uid);
+  return [];
+}
+function userName(uid){ const u=ALL_USERS.find(x=>x.uid===uid||x.id===uid); return u? displayNameFor(u) : "—"; }
+function clientName(cid){ const c=ALL_CLIENTS.find(x=>x.id===cid); return c? c.name : "—"; }
+// Status flags are Admin-defined under System Management → Statuses, so
+// nothing here is hardcoded to a specific status name anymore.
+function isDeliveryStatusName(statusName){
+  const s = ALL_STATUSES.find(x=>x.name===statusName);
+  return !!(s && s.isDelivery);
+}
+function isDelayedStatusName(statusName){
+  const s = ALL_STATUSES.find(x=>x.name===statusName);
+  return !!(s && s.isDelayed);
+}
+function isOverdue(p){ return p.deadline && !isDeliveryStatusName(p.status) && new Date(p.deadline) < new Date(new Date().toDateString()); }
+function daysUntil(d){ if(!d) return null; return Math.ceil((new Date(d)-new Date(new Date().toDateString()))/86400000); }
+function slug(s){ return String(s).replace(/\s+/g,'-'); }
+// Color-codes a status tag by its Admin-set flags rather than a fixed list
+// of known names, so custom statuses an Admin adds later still get a
+// sensible color without needing new CSS.
+function statusTagStyle(statusName){
+  if(isDeliveryStatusName(statusName)) return 'background:#DEF0E1;color:var(--green);';
+  if(isDelayedStatusName(statusName)) return 'background:#FBEACB;color:#8A6512;';
+  return 'background:#DDF0EE;color:var(--teal-dark);';
+}
+
+/* ============================================================
+   LIVE DEADLINE COUNTDOWN — ticks every second.
+   Deadlines are stored as a date only (no time), so the countdown
+   assumes end-of-day (23:59:59) on the deadline date.
+   ============================================================ */
+function countdownText(deadline){
+  if(!deadline) return '—';
+  const target = new Date(deadline+'T23:59:59');
+  if(isNaN(target.getTime())) return '—';
+  let diff = target.getTime() - Date.now();
+  const overdue = diff < 0;
+  diff = Math.abs(diff);
+  const d = Math.floor(diff/86400000);
+  const h = Math.floor((diff%86400000)/3600000);
+  const m = Math.floor((diff%3600000)/60000);
+  const s = Math.floor((diff%60000)/1000);
+  const parts = `${d}d ${h}h ${m}m ${s}s`;
+  return overdue ? `${parts} overdue` : parts;
+}
+function tickCountdowns(){
+  document.querySelectorAll('.live-countdown').forEach(el=>{
+    const dl = el.dataset.deadline;
+    const txt = countdownText(dl);
+    el.textContent = txt;
+    el.classList.toggle('overdue', txt.includes('overdue'));
+  });
+}
+setInterval(tickCountdowns, 1000);
+
+/* ============================================================
+   SHELL / NAV
+   ============================================================ */
+function navItemsForRole(role){
+  return [["dashboard","Dashboard"],["projects","Projects"],["clients","Clients"],["updates","Daily Updates"],["notes","Client Notes"],["profiles","Profile Settings"]];
+}
+function renderShell(){
+  const nav = document.getElementById('navLinks');
+  nav.innerHTML = navItemsForRole(CURRENT_USER.role).map(([id,label])=>
+    `<button class="nav-btn" data-view="${id}" onclick="navigate('${id}')">${label}</button>`).join('');
+  document.getElementById('whoami').innerHTML = `<b>${CURRENT_USER.name}</b>${CURRENT_USER.role}${CURRENT_USER.team? ' · '+CURRENT_USER.team:''}`;
+  const nameEl = document.getElementById('userName');
+  const mailEl = document.getElementById('userMail');
+  if(nameEl) nameEl.textContent = CURRENT_USER.name || '';
+  if(mailEl) mailEl.textContent = CURRENT_USER.email || CURRENT_USER.contact || '';
+}
+function openNav(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('navOverlay');
+  if(sb) sb.classList.add('open');
+  if(ov) ov.classList.add('show');
+  document.body.classList.add('nav-open');
+}
+function closeNav(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('navOverlay');
+  if(sb) sb.classList.remove('open');
+  if(ov) ov.classList.remove('show');
+  document.body.classList.remove('nav-open');
+}
+function wrapTables(){
+  document.querySelectorAll('#main table').forEach(t => {
+    if(t.parentElement && t.parentElement.classList.contains('table-scroll')) return;
+    const w = document.createElement('div');
+    w.className = 'table-scroll';
+    t.parentNode.insertBefore(w, t);
+    w.appendChild(t);
+  });
+}
+function navigate(view){
+  closeNav();
+  currentView = view;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===view || (view==='devDetail' && b.dataset.view==='dashboard')));
+  const renderers = { dashboard:renderDashboard, projects:renderProjects, clients:renderClients, updates:renderUpdates, notes:renderNotes, profiles:renderProfiles };
+  (renderers[view]||renderDashboard)();
+  wrapTables();
+}
+async function refreshAndRender(){ await loadAll(); navigate(currentView); }
+// Opens a developer's detail page — Admin/PM only, per the design doc.
+// Called from the clickable name in the Developers Performance table.
+function openDevDetail(devId){
+  if(!["Admin","Project Manager"].includes(CURRENT_USER.role)) return;
+  DEV_DETAIL_ID = devId;
+  navigate('devDetail');
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+// Performance leaderboard is visible to EVERYONE who logs in — same data
+// for all roles. The only thing gated by role is whether a developer's
+// name is clickable into their client-update detail (Admin/PM only).
+function initials(name){
+  return (name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+function rankBadge(i){
+  const medal = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : '';
+  return `${medal? medal+' ' : ''}#${i+1}`;
+}
+function devPerfTableHtml(rows, clickable){
+  if(!rows.length) return `<div class="lb-panel"><h3>Developer Performance</h3><div class="empty">No developers/freelancers yet.</div></div>`;
+  const maxVal = Math.max(...rows.map(r=>Math.max(r.deliveries, r.target)), 1);
+  return `
+    <div class="lb-panel">
+      <h3>Developer Performance</h3>
+      <div class="lb-panel-sub">Delivered this month · ranked by deliveries · all developers</div>
+      ${rows.map((r,i)=>`<div class="lb-row">
+        <div class="rank-badge ${i===0?'r1':''}">${rankBadge(i)}</div>
+        <div class="avatar sm">${initials(displayNameFor(r.user))}</div>
+        <div class="lb-row-name">
+          <div class="n">${clickable ? `<a href="#" onclick="openDevDetail('${r.uid}');return false;">${displayNameFor(r.user)}</a>` : displayNameFor(r.user)}</div>
+          <div class="progress-track"><div class="progress-fill" style="width:${Math.round((r.deliveries/maxVal)*100)}%"></div></div>
+        </div>
+        <div class="lb-mini-stats">
+          <span>Target <b>${r.target||'—'}</b></span>
+          <span>Delivered <b>${r.deliveries}</b></span>
+          <span>Left <b>${r.target? r.remaining : '—'}</b></span>
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+function salesPerfTableHtml(rows){
+  if(!rows.length) return `<div class="lb-panel"><h3>Sales Performance</h3><div class="empty">No sales reps yet.</div></div>`;
+  const maxAmt = Math.max(...rows.map(r=>Math.max(r.amount, r.target)), 1);
+  return `
+    <div class="lb-panel">
+      <h3>Sales Performance</h3>
+      <div class="lb-panel-sub">Assigned this month · ranked by budget · all sales reps</div>
+      ${rows.map((r,i)=>`<div class="lb-row">
+        <div class="rank-badge ${i===0?'r1':''}">${rankBadge(i)}</div>
+        <div class="avatar sm">${initials(displayNameFor(r.user))}</div>
+        <div class="lb-row-name">
+          <div class="n">${displayNameFor(r.user)}</div>
+          <div class="progress-track"><div class="progress-fill" style="width:${Math.round((r.amount/maxAmt)*100)}%"></div></div>
+        </div>
+        <div class="lb-mini-stats">
+          <span>Target <b>$${r.target.toLocaleString()}</b></span>
+          <span>Closed <b>$${r.amount.toLocaleString()}</b></span>
+          <span>Left <b>$${r.remaining.toLocaleString()}</b></span>
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+// Company-wide summary cards — these show AGGREGATE numbers (target vs
+// closed vs remaining, total deliveries, etc.) rather than repeating
+// whoever is #1, since that person already appears at the top of the
+// ranked list right below. Avoids showing "the same person twice".
+function companyTargetSummaryHtml(salesStats){
+  if(!salesStats.length) return `<div class="top-card empty-card">No sales reps yet.</div>`;
+  const sumIndividual = salesStats.reduce((s,r)=>s+(r.target||0),0);
+  const totalTarget = (COMPANY_SETTINGS.salesTarget>0) ? COMPANY_SETTINGS.salesTarget : sumIndividual;
+  const totalClosed = salesStats.reduce((s,r)=>s+(r.amount||0),0);
+  const remaining = Math.max(totalTarget-totalClosed,0);
+  const pct = totalTarget ? Math.min(Math.round((totalClosed/totalTarget)*100),100) : 0;
+  return `
+    <div class="top-card">
+      <div class="badge">🎯 Sales Target · ${monthLabel()}</div>
+      <div class="stats" style="margin-bottom:12px;">
+        <div class="stat-pill"><div class="k">Target</div><div class="v">${totalTarget? '$'+totalTarget.toLocaleString() : '—'}</div></div>
+        <div class="stat-pill"><div class="k">Total Sales</div><div class="v">$${totalClosed.toLocaleString()}</div></div>
+        <div class="stat-pill"><div class="k">Remaining</div><div class="v">${totalTarget? '$'+remaining.toLocaleString() : '—'}</div></div>
+      </div>
+      ${totalTarget ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div style="font-size:11px;color:var(--slate);margin-top:5px;">${pct}% of target reached</div>` : `<div class="setup-note">No sales target set yet — set a company-wide target in System Management, or an individual target per rep under Users.</div>`}
+    </div>`;
+}
+function companyDevSummaryHtml(devStats){
+  if(!devStats.length) return `<div class="top-card empty-card">No developers/freelancers yet.</div>`;
+  const sumIndividual = devStats.reduce((s,r)=>s+(r.target||0),0);
+  const totalTarget = (COMPANY_SETTINGS.deliveryTarget>0) ? COMPANY_SETTINGS.deliveryTarget : sumIndividual;
+  const totalDeliveries = devStats.reduce((s,r)=>s+r.deliveries,0);
+  const remaining = Math.max(totalTarget-totalDeliveries,0);
+  const totalLate = devStats.reduce((s,r)=>s+r.deliveryLate,0);
+  const rated = devStats.filter(r=>r.avgReview!==null);
+  const avg = rated.length ? (rated.reduce((s,r)=>s+r.avgReview,0)/rated.length) : null;
+  const pct = totalTarget ? Math.min(Math.round((totalDeliveries/totalTarget)*100),100) : 0;
+  return `
+    <div class="top-card">
+      <div class="badge">🛠 Developer Snapshot · ${monthLabel()}</div>
+      <div class="stats" style="margin-bottom:12px;">
+        <div class="stat-pill"><div class="k">Target</div><div class="v">${totalTarget || '—'}</div></div>
+        <div class="stat-pill"><div class="k">Delivered</div><div class="v">${totalDeliveries}</div></div>
+        <div class="stat-pill"><div class="k">Remaining</div><div class="v">${totalTarget? remaining : '—'}</div></div>
+      </div>
+      ${totalTarget ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div style="font-size:11px;color:var(--slate);margin-top:5px;margin-bottom:12px;">${pct}% of delivery target reached</div>` : `<div class="setup-note" style="margin-bottom:12px;">No delivery target set yet — set a company-wide target in System Management, or an individual target per developer under Users.</div>`}
+      <div class="stats">
+        <div class="stat-pill"><div class="k">Late</div><div class="v">${totalLate}</div></div>
+        <div class="stat-pill"><div class="k">Avg Review</div><div class="v">${avg!==null?avg.toFixed(1):'—'}</div></div>
+      </div>
+    </div>`;
+}
+function statCardsHtml(projects){
+  const total = projects.length;
+  const delayed = projects.filter(p=>isDelayedStatusName(p.status)).length;
+  const delivered = projects.filter(p=>isDeliveryStatusName(p.status)).length;
+  const active = total - delayed - delivered;
+  const late = projects.filter(isOverdue).length;
+  return `
+    <div class="topline"><h2>${CURRENT_USER.name||'Dashboard'}</h2><div class="role-badge">${CURRENT_USER.role}${CURRENT_USER.team?' · '+CURRENT_USER.team:''}</div></div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="num">${total}</div><div class="lbl">Total Projects</div></div>
+      <div class="stat-card"><div class="num">${active}</div><div class="lbl">Active</div></div>
+      <div class="stat-card warn"><div class="num">${delayed}</div><div class="lbl">Delayed</div></div>
+      <div class="stat-card danger"><div class="num">${late}</div><div class="lbl">Late</div></div>
+    </div>`;
+}
+function monthPickerHtml(){
+  return `<input type="month" value="${dashboardMonth}" style="width:auto;display:inline-block;" onchange="dashboardMonth=this.value; navigate('dashboard');">`;
+}
+// Per-developer stats for the selected month — Admin/PM only view.
+// "Delivered" is driven by the Developing Stage flagged as the delivery
+// stage in System Management, not by project status — since dev-facing
+// stage tracking is what's actually meaningful to them.
+function computeDevStats(){
+  const devs = ALL_USERS.filter(u=>["Developer","Freelancer"].includes(u.role));
+  const rows = devs.map(u=>{
+    const own = ALL_PROJECTS.filter(p=>p.assignedDevId===(u.uid||u.id));
+    const thisMonth = own.filter(p=> monthOf(p.startDate)===dashboardMonth || monthOf(p.createdAt)===dashboardMonth);
+    const deliveries = own.filter(p=>p.deliveredAt && monthOf(p.deliveredAt)===dashboardMonth);
+    const deliveryLate = deliveries.filter(p=>p.deadline && p.deliveredAt && p.deliveredAt > p.deadline).length;
+    const extensions = thisMonth.reduce((s,p)=>s+(p.extensions||0),0);
+    const rated = own.filter(p=>p.reviewRating);
+    const avgReview = rated.length ? (rated.reduce((s,p)=>s+p.reviewRating,0)/rated.length) : null;
+    const target = Number(u.monthlyDeliveryTarget)||0;
+    const remaining = Math.max(target-deliveries.length,0);
+    return { uid:(u.uid||u.id), user:u, team:u.team||'—', projectsThisMonth:thisMonth.length, deliveries:deliveries.length, deliveryLate, extensions, avgReview, target, remaining };
+  });
+  // Ranked by deliveries, then fewer late deliveries, then review score.
+  return rows.sort((a,b)=> b.deliveries-a.deliveries || a.deliveryLate-b.deliveryLate || (b.avgReview||0)-(a.avgReview||0));
+}
+// Per-sales-rep amount for the selected month, plus target/remaining.
+// Counted the moment a project is CREATED and assigned to that rep —
+// sales closes the deal, it shouldn't wait on dev delivery to count.
+function computeSalesStats(){
+  const reps = ALL_USERS.filter(u=>u.role==="Sales");
+  const rows = reps.map(u=>{
+    const assigned = ALL_PROJECTS.filter(p=>p.salesOwnerId===(u.uid||u.id) && monthOf(p.createdAt)===dashboardMonth);
+    const amount = assigned.reduce((s,p)=>s+(p.budget||0),0);
+    const target = Number(u.monthlyTarget)||0;
+    const remaining = Math.max(target-amount,0);
+    return { uid:(u.uid||u.id), user:u, amount, target, remaining };
+  });
+  return rows.sort((a,b)=> b.amount-a.amount);
+}
+// editable=true is used on a developer/freelancer's OWN dashboard — this is
+// their feature, so they can flip their own project's stage and fire off a
+// quick update right from the row, without needing an Admin/PM to do it.
+function devDetailTable(projects, editable=false){
+  if(!projects.length) return `<div class="empty">No projects assigned yet.</div>`;
+  return `<table><thead><tr><th>Client</th><th>Profile</th><th>Deadline</th><th>Developing Stage</th><th>Developer Update</th><th>Last Update Given</th>${editable?'<th></th>':''}</tr></thead><tbody>
+  ${projects.map(p=>{
+    const du = latestUpdate(p.id);
+    const stageCell = editable ? `
+      <select class="stage-select" onchange="changeStageInline('${p.id}', this.value)">
+        <option value="">— none —</option>
+        ${ALL_STAGES.map(s=>`<option value="${s.name}" ${p.developingStage===s.name?'selected':''}>${s.name}</option>`).join('')}
+      </select>` : (p.developingStage||'—');
+    return `<tr>
+      <td>${clientName(p.clientId)}</td>
+      <td>${p.profileName||''}</td>
+      <td class="mono">${p.deadline||'—'}<br><span class="live-countdown" data-deadline="${p.deadline||''}">—</span></td>
+      <td>${stageCell}</td>
+      <td>${du? du.note : '<span style="color:var(--slate)">no updates</span>'}</td>
+      <td class="mono">${du? du.date : '—'}</td>
+      ${editable? `<td class="row-actions"><button onclick="openUpdateModal('${p.id}')">Post Update</button></td>` : ''}
+    </tr>`;
+  }).join('')}
+  </tbody></table>`;
+}
+async function changeStageInline(projectId, newStage){
+  const proj = ALL_PROJECTS.find(p=>p.id===projectId);
+  const patch = { developingStage: newStage };
+  if(isDeliveryStageName(newStage) && !(proj && proj.deliveredAt)){
+    patch.deliveredAt = new Date().toISOString().slice(0,10);
+  }
+  await db.collection('projects').doc(projectId).update(patch);
+}
+function isDeliveryStageName(stageName){
+  const s = ALL_STAGES.find(x=>x.name===stageName);
+  return !!(s && s.isDelivery);
+}
+function leaderboardBlockHtml(){
+  const clickable = ["Admin","Project Manager"].includes(CURRENT_USER.role);
+  const devStats = computeDevStats();
+  const salesStats = computeSalesStats();
+  return `
+    <div class="lb-header">
+      <div><h2 style="margin:0;">Company Performance</h2><div class="lb-sub">Everyone sees this at a glance — updated live</div></div>
+      ${monthPickerHtml()}
+    </div>
+    <div class="top-row">
+      ${companyTargetSummaryHtml(salesStats)}
+      ${companyDevSummaryHtml(devStats)}
+    </div>
+    <div class="lb-grid">
+      ${salesPerfTableHtml(salesStats)}
+      ${devPerfTableHtml(devStats, clickable)}
+    </div>
+  `;
+}
+function monthLabel(){
+  const [y,m] = dashboardMonth.split('-');
+  return new Date(Number(y), Number(m)-1, 1).toLocaleString('default',{month:'long', year:'numeric'});
+}
+function renderDashboard(){
+  const projects = visibleProjects();
+  document.getElementById('main').innerHTML = `
+    ${statCardsHtml(projects)}
+    ${leaderboardBlockHtml()}
+    <h3 style="margin:6px 0 8px;font-size:15px;">My Projects</h3>
+    <div class="setup-note" style="margin-bottom:10px;max-width:640px;">This is your feature — change a project's Developing Stage right here, or post a quick update, without waiting on an Admin/PM.</div>
+    ${devDetailTable(projects, true)}
+  `;
+}
+// Developer detail page — Admin/PM drill-down only (see openDevDetail above).
+function renderDevDetail(){
+  if(!["Admin","Project Manager"].includes(CURRENT_USER.role)){
+    document.getElementById('main').innerHTML = '<div class="empty">Not available for your role.</div>';
+    return;
+  }
+  const dev = ALL_USERS.find(u=>(u.uid||u.id)===DEV_DETAIL_ID);
+  const projects = ALL_PROJECTS.filter(p=>p.assignedDevId===DEV_DETAIL_ID);
+  document.getElementById('main').innerHTML = `
+    <div class="topline">
+      <h2>${dev? displayNameFor(dev):'Developer'}</h2>
+      <button class="add-btn" onclick="navigate('dashboard')">← Back to Dashboard</button>
+    </div>
+    <div class="setup-note" style="margin-bottom:14px;max-width:640px;">${dev? (dev.role+(dev.team?' · '+dev.team:'')) : ''} — this mirrors what ${dev?dev.name:'this developer'} sees, minus their own editing controls (stage changes and quick updates stay theirs to make).</div>
+    ${devDetailTable(projects, false)}
+  `;
+}
+function latestUpdate(projectId){
+  return latestUpdateForProject(projectId);
+}
+
+/* ============================================================
+   PROJECTS
+   ============================================================ */
+function renderProjectTable(projects, showActions=true){
+  if(!projects.length) return `<div class="empty">No projects yet.</div>`;
+  const canEdit = ["Admin","Project Manager","Team Lead"].includes(CURRENT_USER.role);
+  return `<table><thead><tr>
+    <th>Profile</th><th>Client</th><th>Assigned</th><th>Status</th><th>Priority</th><th>Deadline</th>
+    ${CURRENT_USER.role!=="Freelancer" ? "<th>Budget</th>" : ""}
+    ${showActions && canEdit ? "<th></th>" : ""}
+  </tr></thead><tbody>
+  ${projects.map(p=>`<tr>
+    <td>${p.profileName||''}<div class="mono" style="color:var(--slate);font-size:11px;">${(p.profileTags||[]).join(', ')}</div></td>
+    <td>${clientName(p.clientId)}</td>
+    <td>${userName(p.assignedDevId)}</td>
+    <td><span class="tag" style="${statusTagStyle(p.status)}">${p.status}</span></td>
+    <td><span class="tag pri-${p.priority}">${p.priority}</span></td>
+    <td class="mono">${p.deadline||'—'}<br><span class="live-countdown" data-deadline="${p.deadline||''}">—</span></td>
+    ${CURRENT_USER.role!=="Freelancer" ? `<td class="mono">${p.budget?('$'+p.budget):'—'}</td>` : ""}
+    ${showActions && canEdit ? `<td class="row-actions"><button onclick="openProjectModal('${p.id}')">Edit</button></td>` : ""}
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+function renderProjects(){
+  const projects = visibleProjects();
+  const canCreate = ["Admin","Project Manager"].includes(CURRENT_USER.role);
+  document.getElementById('main').innerHTML = `
+    <div class="topline"><h2>Projects</h2>
+      ${canCreate? `<button class="add-btn" onclick="openProjectModal()">+ New Project</button>`:''}
+    </div>
+    ${renderProjectTable(projects)}
+  `;
+}
+function openProjectModal(id){
+  const p = id ? ALL_PROJECTS.find(x=>x.id===id) : {};
+  const devs = ALL_USERS.filter(u=>["Developer","Freelancer"].includes(u.role));
+  const leads = ALL_USERS.filter(u=>u.role==="Team Lead");
+  const salesUsers = ALL_USERS.filter(u=>u.role==="Sales");
+  const canReview = ["Admin","Project Manager"].includes(CURRENT_USER.role);
+  showModal(`
+    <h3>${id? 'Edit Project':'New Project'}</h3>
+    <label>Profile Name</label><input id="f_name" value="${p.profileName||''}">
+    <label>Client</label><select id="f_client">${ALL_CLIENTS.map(c=>`<option value="${c.id}" ${p.clientId===c.id?'selected':''}>${c.name}</option>`).join('')}</select>
+    <label>Team Lead</label><select id="f_lead"><option value="">— none —</option>${leads.map(u=>`<option value="${u.id}" ${p.teamLeadId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
+    <label>Assigned Developer / Freelancer</label><select id="f_dev"><option value="">— unassigned —</option>${devs.map(u=>`<option value="${u.id}" ${p.assignedDevId===u.id?'selected':''}>${u.name} (${u.role})</option>`).join('')}</select>
+    <label>Sales Owner</label><select id="f_sales"><option value="">— none —</option>${salesUsers.map(u=>`<option value="${u.id}" ${p.salesOwnerId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
+    <label>Status</label><select id="f_status">${ALL_STATUSES.map(s=>`<option ${p.status===s.name?'selected':''}>${s.name}</option>`).join('')}</select>
+    ${!ALL_STATUSES.length ? `<div class="setup-note">No Statuses defined yet — an Admin can add them under System Management.</div>` : ''}
+    <label>Priority</label><select id="f_priority">${PRIORITIES.map(s=>`<option ${p.priority===s?'selected':''}>${s}</option>`).join('')}</select>
+    <label>Start Date</label><input id="f_start" type="date" value="${p.startDate||''}">
+    <label>Deadline</label><input id="f_deadline" type="date" value="${p.deadline||''}">
+    <label>Budget / Price ($)</label><input id="f_budget" type="number" value="${p.budget||''}">
+    <label>Profile</label><select id="f_profiletag">
+      <option value="">— none —</option>
+      ${ALL_PROFILES.map(pr=>`<option value="${pr.name}" ${(p.profileTags||[])[0]===pr.name?'selected':''}>${pr.name}</option>`).join('')}
+    </select>
+    ${!ALL_PROFILES.length ? `<div class="setup-note">No Profiles defined yet — an Admin can add them under Profile Settings.</div>` : ''}
+    <label>Developing Stage</label><select id="f_stage">
+      <option value="">— none —</option>
+      ${ALL_STAGES.map(s=>`<option value="${s.name}" ${p.developingStage===s.name?'selected':''}>${s.name}</option>`).join('')}
+    </select>
+    ${!ALL_STAGES.length ? `<div class="setup-note">No Developing Stages defined yet — an Admin can add them under System Management.</div>` : ''}
+    <label>Extensions Taken</label><input id="f_extensions" type="number" min="0" value="${p.extensions||0}">
+    <label>Review Rating (1–5)</label>
+    ${canReview
+      ? `<input id="f_review" type="number" min="1" max="5" step="0.1" value="${p.reviewRating||''}">`
+      : `<div class="setup-note">${p.reviewRating? p.reviewRating.toFixed(1)+' / 5 — set by Admin/PM.' : 'Not yet rated — only Admin/PM can set this.'}</div>`
+    }
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveProject('${id||''}')">Save</button>
+    </div>
+  `);
+}
+async function saveProject(id){
+  const existing = id ? ALL_PROJECTS.find(p=>p.id===id) : null;
+  const newStatus = val('f_status');
+  const newStage = val('f_stage');
+  const canReview = ["Admin","Project Manager"].includes(CURRENT_USER.role);
+  const doc = {
+    profileName: val('f_name'), clientId: val('f_client'), teamLeadId: val('f_lead'),
+    assignedDevId: val('f_dev'), salesOwnerId: val('f_sales'), status: newStatus,
+    priority: val('f_priority'), startDate: val('f_start'), deadline: val('f_deadline'),
+    budget: Number(val('f_budget'))||0,
+    profileTags: val('f_profiletag') ? [val('f_profiletag')] : [],
+    developingStage: newStage,
+    extensions: Number(val('f_extensions'))||0,
+    reviewRating: canReview
+      ? (val('f_review') ? Number(val('f_review')) : (existing?existing.reviewRating:null) || null)
+      : (existing ? (existing.reviewRating||null) : null),
+    assignedPMId: existing ? (existing.assignedPMId||CURRENT_USER.uid) : CURRENT_USER.uid
+  };
+  // Auto-track completion date the first time status flips to a status
+  // Admin flagged as "Completed" under System Management → Statuses.
+  if(isDeliveryStatusName(newStatus) && !(existing && existing.completedAt)){
+    doc.completedAt = new Date().toISOString().slice(0,10);
+  } else if(existing && existing.completedAt){
+    doc.completedAt = existing.completedAt;
+  }
+  // Auto-track delivery date the first time EITHER the Developing Stage
+  // hits whichever stage Admin flagged as "Delivered", OR the Status hits
+  // whichever status Admin flagged as "Delivered" (e.g. marking a project
+  // Completed also counts it delivered, even if its stage wasn't updated).
+  if((isDeliveryStageName(newStage) || isDeliveryStatusName(newStatus)) && !(existing && existing.deliveredAt)){
+    doc.deliveredAt = new Date().toISOString().slice(0,10);
+  } else if(existing && existing.deliveredAt){
+    doc.deliveredAt = existing.deliveredAt;
+  }
+  if(id){
+    await db.collection('projects').doc(id).update(doc);
+  } else {
+    doc.createdAt = new Date().toISOString().slice(0,10);
+    await db.collection('projects').add(doc);
+  }
+  closeModal(); await refreshAndRender();
+}
+
+/* ============================================================
+   CLIENTS
+   ============================================================ */
+function renderClients(){
+  const canCreate = ["Admin","Project Manager"].includes(CURRENT_USER.role);
+  const rows = ALL_CLIENTS.filter(c=> CURRENT_USER.role!=="Sales" || c.assignedSalesRep===CURRENT_USER.uid || ALL_PROJECTS.some(p=>p.clientId===c.id && p.salesOwnerId===CURRENT_USER.uid))
+    .map(c=>`<tr>
+      <td>${c.name}</td><td>${c.companyProfile||''}</td><td>${userName(c.assignedSalesRep)}</td>
+      <td class="row-actions">${canCreate?`<button onclick="openClientModal('${c.id}')">Edit</button>`:''}</td>
+    </tr>`).join('');
+  document.getElementById('main').innerHTML = `
+    <div class="topline"><h2>Clients</h2>${canCreate?`<button class="add-btn" onclick="openClientModal()">+ New Client</button>`:''}</div>
+    <table><thead><tr><th>Name</th><th>Company Profile</th><th>Sales Rep</th><th></th></tr></thead>
+    <tbody>${rows || '<tr><td class="empty" colspan="4">No clients yet.</td></tr>'}</tbody></table>
+  `;
+}
+function openClientModal(id){
+  const c = id ? ALL_CLIENTS.find(x=>x.id===id) : {};
+  const salesUsers = ALL_USERS.filter(u=>u.role==="Sales");
+  showModal(`
+    <h3>${id?'Edit Client':'New Client'}</h3>
+    <label>Client Name</label><input id="f_cname" value="${c.name||''}">
+    <label>Company Profile</label><textarea id="f_cprofile">${c.companyProfile||''}</textarea>
+    <label>Assigned Sales Rep</label><select id="f_csales"><option value="">— none —</option>${salesUsers.map(u=>`<option value="${u.id}" ${c.assignedSalesRep===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveClient('${id||''}')">Save</button>
+    </div>
+  `);
+}
+async function saveClient(id){
+  const doc = { name: val('f_cname'), companyProfile: val('f_cprofile'), assignedSalesRep: val('f_csales') };
+  if(id) await db.collection('clients').doc(id).update(doc);
+  else await db.collection('clients').add(doc);
+  closeModal(); await refreshAndRender();
+}
+
+/* ============================================================
+   DAILY UPDATES
+   ============================================================ */
+async function renderUpdates(){
+  const projects = visibleProjects();
+  const canPost = ["Developer","Freelancer"].includes(CURRENT_USER.role);
+  const snap = await db.collection('dailyUpdates').orderBy('createdAt','desc').limit(100).get();
+  const updates = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>projects.some(p=>p.id===u.projectId) || CURRENT_USER.role==="Admin" || CURRENT_USER.role==="Project Manager");
+  document.getElementById('main').innerHTML = `
+    <div class="topline"><h2>Daily Updates</h2>${canPost?`<button class="add-btn" onclick="openUpdateModal()">+ Post Update</button>`:''}</div>
+    <table><thead><tr><th>Date</th><th>Project</th><th>By</th><th>Note</th></tr></thead>
+    <tbody>${updates.map(u=>{
+      const p = ALL_PROJECTS.find(x=>x.id===u.projectId);
+      return `<tr><td class="mono">${u.date||''}</td><td>${p?p.profileName:'—'}</td><td>${userName(u.userId)}</td><td>${u.note}</td></tr>`;
+    }).join('') || '<tr><td class="empty" colspan="4">No updates logged yet.</td></tr>'}</tbody></table>
+  `;
+}
+function openUpdateModal(preselectId){
+  const myProjects = visibleProjects();
+  showModal(`
+    <h3>Post Daily Update</h3>
+    <label>Project</label><select id="f_uproject">${myProjects.map(p=>`<option value="${p.id}" ${preselectId===p.id?'selected':''}>${p.profileName}</option>`).join('') || '<option value="">No projects assigned</option>'}</select>
+    <label>Status Note</label><textarea id="f_unote" placeholder="e.g. waiting on client credentials, submitted for review..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveUpdate()">Post</button>
+    </div>
+  `);
+}
+async function saveUpdate(){
+  const today = new Date().toISOString().slice(0,10);
+  await db.collection('dailyUpdates').add({
+    projectId: val('f_uproject'), userId: CURRENT_USER.uid, date: today, note: val('f_unote'),
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  closeModal(); navigate('updates');
+}
+
+/* ============================================================
+   CLIENT NOTES
+   ============================================================ */
+async function renderNotes(){
+  const projects = visibleProjects();
+  const canPost = ["Developer","Freelancer","Sales","Project Manager","Admin"].includes(CURRENT_USER.role);
+  const snap = await db.collection('clientNotes').orderBy('date','desc').limit(100).get();
+  const notes = snap.docs.map(d=>({id:d.id,...d.data()})).filter(n=>projects.some(p=>p.id===n.projectId) || ["Admin","Project Manager"].includes(CURRENT_USER.role));
+  document.getElementById('main').innerHTML = `
+    <div class="topline"><h2>Client Notes</h2>${canPost?`<button class="add-btn" onclick="openNoteModal()">+ Add Note</button>`:''}</div>
+    <table><thead><tr><th>Date</th><th>Project</th><th>Note</th><th>Added By</th></tr></thead>
+    <tbody>${notes.map(n=>{
+      const p = ALL_PROJECTS.find(x=>x.id===n.projectId);
+      return `<tr><td class="mono">${n.date}</td><td>${p?p.profileName:'—'}</td><td>${n.content}</td><td>${userName(n.addedBy)}</td></tr>`;
+    }).join('') || '<tr><td class="empty" colspan="4">No client notes yet.</td></tr>'}</tbody></table>
+  `;
+}
+function openNoteModal(){
+  const myProjects = visibleProjects();
+  showModal(`
+    <h3>Add Client Note</h3>
+    <label>Project</label><select id="f_nproject">${myProjects.map(p=>`<option value="${p.id}">${p.profileName}</option>`).join('') || '<option value="">No projects assigned</option>'}</select>
+    <label>What the client said / requested</label><textarea id="f_ncontent"></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveNote()">Save</button>
+    </div>
+  `);
+}
+async function saveNote(){
+  const today = new Date().toISOString().slice(0,10);
+  await db.collection('clientNotes').add({
+    projectId: val('f_nproject'), date: today, content: val('f_ncontent'), addedBy: CURRENT_USER.uid
+  });
+  closeModal(); navigate('notes');
+}
+
+
+/* ============================================================
+   PROFILE SETTINGS
+   Everyone can view; only Admin + Project Manager can add/edit.
+   Live sync refreshes this page automatically for all users.
+   ============================================================ */
+function profileDbSyncNote(){
+  return window.firebaseDbMode === 'file'
+    ? '<br><span style="color:var(--green);">● Shared database active — when Admin or Project Manager saves, everyone sees the update instantly.</span>'
+    : '<br><span style="color:var(--amber);">● Start server with <b>node server.js</b> so profile updates reach all users.</span>';
+}
+function canManageProfiles(){
+  return ["Admin","Project Manager"].includes(CURRENT_USER.role);
+}
+function escHtml(s){
+  return String(s||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function profileGigNames(p){
+  return (p.gigNames || []).filter(Boolean);
+}
+function renderProfiles(){
+  const canEdit = canManageProfiles();
+  document.getElementById('main').innerHTML = `
+    <div class="topline"><h2>Profile Settings</h2>${canEdit ? '<button class="add-btn" onclick="openProfileModal()">+ New Profile</button>' : ''}</div>
+    <div class="setup-note">${canEdit
+      ? 'Only <b>Admin</b> and <b>Project Manager</b> can add or edit. Everyone else can view.' + profileDbSyncNote()
+      : 'View only. Only <b>Admin</b> and <b>Project Manager</b> can add or edit profiles.' + profileDbSyncNote()}</div>
+    <table><thead><tr><th>Profile Name</th><th>Gig Names</th>${canEdit ? '<th></th>' : ''}</tr></thead>
+    <tbody>${ALL_PROFILES.map(p=>`<tr>
+      <td>${escHtml(p.name)}</td>
+      <td>${profileGigNames(p).map(g=>escHtml(g)).join(', ') || '<span class="mono" style="color:var(--slate);">—</span>'}</td>
+      ${canEdit ? `<td class="row-actions">
+        <button onclick="openProfileModal('${p.id}')">Edit</button>
+        <button onclick="deleteProfile('${p.id}')">Delete</button>
+      </td>` : ''}
+    </tr>`).join('') || `<tr><td class="empty" colspan="${canEdit ? 3 : 2}">No profiles defined yet (e.g. Web Development, Mobile App, SEO, Design).</td></tr>`}</tbody></table>
+  `;
+}
+function profileGigFieldsHtml(gigNames){
+  return Array.from({length:10}, (_,i)=>`
+    <label>Gig Name ${i+1}</label>
+    <input id="f_gig${i}" value="${escHtml((gigNames||[])[i]||'')}" placeholder="Optional">
+  `).join('');
+}
+function openProfileModal(id){
+  if(!canManageProfiles()) return;
+  const p = id ? ALL_PROFILES.find(x=>x.id===id) : {};
+  showModal(`
+    <h3>${id ? 'Edit Profile' : 'New Profile'}</h3>
+    <label>Profile Name</label><input id="f_pname" value="${escHtml(p.name||'')}" placeholder="e.g. Web Development">
+    <p style="font-size:12px;color:var(--slate);margin:14px 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Gig Names (up to 10)</p>
+    ${profileGigFieldsHtml(p.gigNames)}
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveProfile('${id||''}')">Save</button>
+    </div>
+  `);
+}
+async function saveProfile(id){
+  if(!canManageProfiles()) return;
+  const name = val('f_pname').trim();
+  if(!name){ alert('Profile name is required.'); return; }
+  const gigNames = Array.from({length:10}, (_,i)=>val('f_gig'+i).trim()).filter(Boolean);
+  const doc = { name, gigNames };
+  try{
+    if(id) await db.collection('profiles').doc(id).set(doc, { merge:true });
+    else await db.collection('profiles').add(doc);
+    closeModal(); await refreshAndRender();
+  }catch(e){
+    console.error('saveProfile failed', e);
+    alert('Could not save profile. Make sure node server.js is running.');
+  }
+}
+async function deleteProfile(id){
+  if(!canManageProfiles()) return;
+  if(!confirm('Delete this profile?')) return;
+  await db.collection('profiles').doc(id).delete();
+  await refreshAndRender();
+}
+
+/* ============================================================
+   MODAL HELPERS
+   ============================================================ */
+function showModal(html){ document.getElementById('modal').innerHTML = html; document.getElementById('modalBg').style.display='flex'; }
+function closeModal(){ document.getElementById('modalBg').style.display='none'; }
+function val(id){ const el=document.getElementById(id); return el? el.value : ''; }
+function toggleTargetField(){
+  const role = val('f_urole');
+  const salesWrap = document.getElementById('targetFieldWrap');
+  const devWrap = document.getElementById('devTargetFieldWrap');
+  if(salesWrap) salesWrap.style.display = (role==='Sales') ? 'block' : 'none';
+  if(devWrap) devWrap.style.display = (["Developer","Freelancer"].includes(role)) ? 'block' : 'none';
+}
+document.getElementById('modalBg').addEventListener('click', e=>{ if(e.target.id==='modalBg') closeModal(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,660 @@
+{
+  "settings": {
+    "company": {
+      "salesTarget": 35000,
+      "deliveryTarget": 8
+    },
+    "userOrder": {
+      "ids": [
+        "sanaulAdminUid0000001",
+        "7ACKkv7pojY7NdL2GrV4",
+        "rafiqPmUid00000000001",
+        "nabilaLeadUid00000001",
+        "tanvirDevUid0000000001",
+        "farhanaDevUid00000001",
+        "imranFreeUid0000000001",
+        "antuSalesUid0000000001",
+        "protikSalesUid0000001",
+        "tauhidSalesUid0000001",
+        "adibSalesUid0000000001",
+        "badolSalesUid0000000001"
+      ]
+    }
+  },
+  "users": {
+    "7tFGqtHIuMdJrLEEvBD7ElfNbPC2": {
+      "name": "Admin",
+      "role": "Admin",
+      "team": "",
+      "workHours": "10am–8pm GMT+6",
+      "timezone": "GMT+6",
+      "contact": "mdabdulquiyumbadol@gmail.com",
+      "active": true,
+      "profiles": []
+    },
+    "sanaulAdminUid0000001": {
+      "name": "Sanaul",
+      "role": "Admin",
+      "team": "Leadership",
+      "workHours": "10am–7pm GMT+6",
+      "timezone": "GMT+6",
+      "contact": "sanaul.doptortech@gmail.com",
+      "active": true,
+      "profiles": []
+    },
+    "rafiqPmUid00000000001": {
+      "name": "Rafiq Hasan",
+      "role": "Project Manager",
+      "team": "Delivery",
+      "workHours": "9am–6pm GMT+6",
+      "timezone": "GMT+6",
+      "contact": "rafiq.pm@doptortech.com",
+      "active": true,
+      "profiles": [
+        "Web",
+        "Mobile"
+      ]
+    },
+    "nabilaLeadUid00000001": {
+      "name": "Nabila Rahman",
+      "role": "Team Lead",
+      "team": "Team Alpha",
+      "workHours": "10am–7pm GMT+6",
+      "timezone": "GMT+6",
+      "contact": "nabila.lead@doptortech.com",
+      "active": true,
+      "profiles": [
+        "Web",
+        "WordPress"
+      ]
+    },
+    "tanvirDevUid0000000001": {
+      "name": "Tanvir Ahmed",
+      "role": "Developer",
+      "team": "Team Alpha",
+      "workHours": "10am–7pm GMT+6",
+      "timezone": "GMT+6",
+      "contact": "tanvir.dev@doptortech.com",
+      "active": true,
+      "profiles": [
+        "Web",
+        "WordPress"
+      ],
+      "monthlyDeliveryTarget": 4
+    },
+    "farhanaDevUid00000001": {
+      "name": "Farhana Islam",
+      "role": "Developer",
+      "team": "Team Alpha",
+      "workHours": "11am–8pm GMT+6",
+      "timezone": "GMT+6",
+      "contact": "farhana.dev@doptortech.com",
+      "active": true,
+      "profiles": [
+        "Mobile",
+        "UI/UX"
+      ],
+      "monthlyDeliveryTarget": 3
+    },
+    "imranFreeUid0000000001": {
+      "name": "Imran Hossain",
+      "role": "Freelancer",
+      "team": "External",
+      "workHours": "flexible GMT+6",
+      "timezone": "GMT+6",
+      "contact": "imran.free@doptortech.com",
+      "active": true,
+      "profiles": [
+        "SEO",
+        "WordPress"
+      ],
+      "monthlyDeliveryTarget": 2
+    },
+    "antuSalesUid0000000001": {
+      "name": "Antu",
+      "role": "Sales",
+      "team": "Sales",
+      "workHours": "10am–8pm GMT+6",
+      "timezone": "GMT+6",
+      "contact": "antu.doptortech@gmail.com",
+      "active": true,
+      "profiles": [],
+      "monthlyTarget": 8000
+    },
+    "protikSalesUid0000001": {
+      "name": "Protik",
+      "role": "Sales",
+      "team": "Sales",
+      "workHours": "10am–8pm GMT+6",
+      "timezone": "GMT+6",
+      "contact": "protik.doptortech@gmail.com",
+      "active": true,
+      "profiles": [],
+      "monthlyTarget": 10000
+    },
+    "tauhidSalesUid0000001": {
+      "name": "Tauhid",
+      "role": "Sales",
+      "team": "Sales",
+      "workHours": "11am–8pm GMT+6",
+      "timezone": "GMT+6",
+      "contact": "tauhid.doptortech@gmail.com",
+      "active": true,
+      "profiles": [],
+      "monthlyTarget": 6000
+    },
+    "adibSalesUid0000000001": {
+      "name": "Adib",
+      "role": "Sales",
+      "team": "Sales",
+      "workHours": "10am–7pm GMT+6",
+      "timezone": "GMT+6",
+      "contact": "adib.doptortech@gmail.com",
+      "active": true,
+      "profiles": [],
+      "monthlyTarget": 7000
+    },
+    "badolSalesUid0000000001": {
+      "name": "Badol",
+      "role": "Sales",
+      "team": "Sales",
+      "workHours": "12pm–9pm GMT+6",
+      "timezone": "GMT+6",
+      "contact": "badol.doptortech@gmail.com",
+      "active": true,
+      "profiles": [],
+      "monthlyTarget": 8000
+    },
+    "7ACKkv7pojY7NdL2GrV4": {
+      "name": "Momin",
+      "role": "Admin",
+      "team": "",
+      "workHours": "",
+      "contact": "1@gmail.com",
+      "profiles": [],
+      "active": true,
+      "monthlyTarget": 0,
+      "monthlyDeliveryTarget": 0,
+      "loginEmail": "1@gmail.com"
+    }
+  },
+  "profiles": {
+    "tag_web": {
+      "name": "Web Development",
+      "gigNames": [
+        "React",
+        "Next.js",
+        "WordPress",
+        "Shopify",
+        "Laravel"
+      ]
+    },
+    "tag_mobile": {
+      "name": "Mobile App",
+      "gigNames": [
+        "Flutter",
+        "React Native",
+        "iOS",
+        "Android"
+      ]
+    },
+    "tag_seo": {
+      "name": "SEO",
+      "gigNames": [
+        "On-page SEO",
+        "Technical SEO",
+        "Link Building"
+      ]
+    },
+    "tag_uiux": {
+      "name": "UI/UX Design",
+      "gigNames": [
+        "Figma",
+        "Landing Page",
+        "Dashboard UI"
+      ]
+    },
+    "tag_wp": {
+      "name": "WordPress",
+      "gigNames": [
+        "Theme Dev",
+        "Plugin Dev",
+        "WooCommerce"
+      ]
+    },
+    "llw6miFUdtNSJxDkU0Xv": {
+      "name": "Rahatul",
+      "gigNames": [
+        "bhajdsalkf",
+        "asdfjanblkja",
+        "aslkdnlfjkas"
+      ]
+    },
+    "m6QHLelQ4m2YAkHSW1RO": {
+      "name": "momin",
+      "gigNames": [
+        "asdfsa",
+        "asdfa",
+        "afad"
+      ]
+    }
+  },
+  "stages": {
+    "stg_discovery": {
+      "name": "Discovery",
+      "isDelivery": false
+    },
+    "stg_design": {
+      "name": "Design",
+      "isDelivery": false
+    },
+    "stg_dev": {
+      "name": "Development",
+      "isDelivery": false
+    },
+    "stg_qa": {
+      "name": "QA",
+      "isDelivery": false
+    },
+    "stg_delivered": {
+      "name": "Delivered",
+      "isDelivery": true
+    }
+  },
+  "statuses": {
+    "sts_ns": {
+      "name": "Not Started",
+      "isDelivery": false,
+      "isDelayed": false
+    },
+    "sts_ip": {
+      "name": "In Progress",
+      "isDelivery": false,
+      "isDelayed": false
+    },
+    "sts_wait": {
+      "name": "Waiting on Client",
+      "isDelivery": false,
+      "isDelayed": true
+    },
+    "sts_rev": {
+      "name": "In Review",
+      "isDelivery": false,
+      "isDelayed": false
+    },
+    "sts_done": {
+      "name": "Completed",
+      "isDelivery": true,
+      "isDelayed": false
+    },
+    "sts_hold": {
+      "name": "On Hold",
+      "isDelivery": false,
+      "isDelayed": true
+    }
+  },
+  "clients": {
+    "cli_novatech": {
+      "name": "NovaTech Ltd",
+      "companyProfile": "SaaS startup — corporate website + lead forms.",
+      "assignedSalesRep": "antuSalesUid0000000001"
+    },
+    "cli_orbit": {
+      "name": "Orbit Systems",
+      "companyProfile": "B2B CRM for distributors in Dhaka.",
+      "assignedSalesRep": "protikSalesUid0000001"
+    },
+    "cli_greenleaf": {
+      "name": "GreenLeaf Organics",
+      "companyProfile": "Organic grocery brand needing local SEO.",
+      "assignedSalesRep": "tauhidSalesUid0000001"
+    },
+    "cli_brightshop": {
+      "name": "BrightShop BD",
+      "companyProfile": "Fashion e-commerce on WordPress/WooCommerce.",
+      "assignedSalesRep": "adibSalesUid0000000001"
+    },
+    "cli_metro": {
+      "name": "Metro Studio",
+      "companyProfile": "Architecture studio — brand UI kit.",
+      "assignedSalesRep": "antuSalesUid0000000001"
+    },
+    "cli_harbor": {
+      "name": "Harbor Logistics",
+      "companyProfile": "Freight company landing page + quote form.",
+      "assignedSalesRep": "badolSalesUid0000000001"
+    },
+    "cli_pulse": {
+      "name": "Pulse Analytics",
+      "companyProfile": "Internal dashboard for campaign reporting.",
+      "assignedSalesRep": "protikSalesUid0000001"
+    },
+    "cli_kidslearn": {
+      "name": "KidsLearn",
+      "companyProfile": "EdTech — parent/student mobile app.",
+      "assignedSalesRep": "adibSalesUid0000000001"
+    },
+    "cli_cafemenu": {
+      "name": "CafeMenu",
+      "companyProfile": "Cafe chain digital menu (WordPress).",
+      "assignedSalesRep": "tauhidSalesUid0000001"
+    },
+    "cli_rahman": {
+      "name": "Rahman & Associates",
+      "companyProfile": "Law firm brochure site + appointment booking.",
+      "assignedSalesRep": "badolSalesUid0000000001"
+    },
+    "cli_fittrack": {
+      "name": "FitTrack",
+      "companyProfile": "Fitness brand identity and landing visuals.",
+      "assignedSalesRep": "antuSalesUid0000000001"
+    }
+  },
+  "projects": {
+    "prj_novatech": {
+      "profileName": "NovaTech Corporate Site",
+      "clientId": "cli_novatech",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedDevId": "tanvirDevUid0000000001",
+      "salesOwnerId": "antuSalesUid0000000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "In Progress",
+      "priority": "High",
+      "startDate": "2026-08-04",
+      "deadline": "2026-09-15",
+      "budget": 4500,
+      "profileTags": [
+        "Web Development"
+      ],
+      "developingStage": "Delivered",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-08-04",
+      "deliveredAt": "2026-08-31"
+    },
+    "prj_orbit": {
+      "profileName": "Orbit CRM App",
+      "clientId": "cli_orbit",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedDevId": "farhanaDevUid00000001",
+      "salesOwnerId": "protikSalesUid0000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "In Progress",
+      "priority": "High",
+      "startDate": "2026-08-10",
+      "deadline": "2026-09-30",
+      "budget": 8200,
+      "profileTags": [
+        "Mobile App"
+      ],
+      "developingStage": "Development",
+      "extensions": 1,
+      "reviewRating": null,
+      "createdAt": "2026-08-10"
+    },
+    "prj_greenleaf": {
+      "profileName": "GreenLeaf Local SEO",
+      "clientId": "cli_greenleaf",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedDevId": "imranFreeUid0000000001",
+      "salesOwnerId": "tauhidSalesUid0000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "Waiting on Client",
+      "priority": "Medium",
+      "startDate": "2026-07-20",
+      "deadline": "2026-08-20",
+      "budget": 1800,
+      "profileTags": [
+        "SEO"
+      ],
+      "developingStage": "QA",
+      "extensions": 2,
+      "reviewRating": null,
+      "createdAt": "2026-07-20"
+    },
+    "prj_brightshop": {
+      "profileName": "BrightShop Woo Store",
+      "clientId": "cli_brightshop",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedDevId": "tanvirDevUid0000000001",
+      "salesOwnerId": "adibSalesUid0000000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "Completed",
+      "priority": "Medium",
+      "startDate": "2026-08-01",
+      "deadline": "2026-08-25",
+      "budget": 3200,
+      "profileTags": [
+        "WordPress"
+      ],
+      "developingStage": "Delivered",
+      "extensions": 0,
+      "reviewRating": 4.6,
+      "createdAt": "2026-08-01",
+      "completedAt": "2026-08-22",
+      "deliveredAt": "2026-08-22"
+    },
+    "prj_metro": {
+      "profileName": "Metro UI Kit",
+      "clientId": "cli_metro",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedDevId": "farhanaDevUid00000001",
+      "salesOwnerId": "antuSalesUid0000000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "In Review",
+      "priority": "Medium",
+      "startDate": "2026-08-12",
+      "deadline": "2026-09-05",
+      "budget": 2100,
+      "profileTags": [
+        "UI/UX Design"
+      ],
+      "developingStage": "QA",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-08-12"
+    },
+    "prj_harbor": {
+      "profileName": "Harbor Landing Page",
+      "clientId": "cli_harbor",
+      "teamLeadId": "",
+      "assignedDevId": "imranFreeUid0000000001",
+      "salesOwnerId": "badolSalesUid0000000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "On Hold",
+      "priority": "Low",
+      "startDate": "2026-07-28",
+      "deadline": "2026-08-25",
+      "budget": 1500,
+      "profileTags": [
+        "Web Development"
+      ],
+      "developingStage": "Design",
+      "extensions": 1,
+      "reviewRating": null,
+      "createdAt": "2026-07-28"
+    },
+    "prj_pulse": {
+      "profileName": "Pulse Campaign Dashboard",
+      "clientId": "cli_pulse",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedDevId": "tanvirDevUid0000000001",
+      "salesOwnerId": "protikSalesUid0000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "Completed",
+      "priority": "High",
+      "startDate": "2026-07-05",
+      "deadline": "2026-08-10",
+      "budget": 5600,
+      "profileTags": [
+        "Web Development"
+      ],
+      "developingStage": "Delivered",
+      "extensions": 0,
+      "reviewRating": 4.8,
+      "createdAt": "2026-07-05",
+      "completedAt": "2026-08-08",
+      "deliveredAt": "2026-08-08"
+    },
+    "prj_kidslearn": {
+      "profileName": "KidsLearn Mobile App",
+      "clientId": "cli_kidslearn",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedDevId": "farhanaDevUid00000001",
+      "salesOwnerId": "adibSalesUid0000000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "Not Started",
+      "priority": "High",
+      "startDate": "2026-08-25",
+      "deadline": "2026-10-15",
+      "budget": 9000,
+      "profileTags": [
+        "Mobile App"
+      ],
+      "developingStage": "Discovery",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-08-25"
+    },
+    "prj_cafemenu": {
+      "profileName": "CafeMenu Digital Menu",
+      "clientId": "cli_cafemenu",
+      "teamLeadId": "",
+      "assignedDevId": "imranFreeUid0000000001",
+      "salesOwnerId": "tauhidSalesUid0000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "In Progress",
+      "priority": "Low",
+      "startDate": "2026-08-18",
+      "deadline": "2026-09-10",
+      "budget": 900,
+      "profileTags": [
+        "WordPress"
+      ],
+      "developingStage": "Development",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-08-18"
+    },
+    "prj_rahman": {
+      "profileName": "Rahman Law Firm Site",
+      "clientId": "cli_rahman",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedDevId": "tanvirDevUid0000000001",
+      "salesOwnerId": "badolSalesUid0000000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "Completed",
+      "priority": "Medium",
+      "startDate": "2026-08-02",
+      "deadline": "2026-08-28",
+      "budget": 4800,
+      "profileTags": [
+        "Web Development"
+      ],
+      "developingStage": "Delivered",
+      "extensions": 0,
+      "reviewRating": 4.4,
+      "createdAt": "2026-08-02",
+      "completedAt": "2026-08-28",
+      "deliveredAt": "2026-08-28"
+    },
+    "prj_fittrack": {
+      "profileName": "FitTrack Brand Landing",
+      "clientId": "cli_fittrack",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedDevId": "farhanaDevUid00000001",
+      "salesOwnerId": "antuSalesUid0000000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "Completed",
+      "priority": "Medium",
+      "startDate": "2026-08-03",
+      "deadline": "2026-08-20",
+      "budget": 2400,
+      "profileTags": [
+        "UI/UX Design"
+      ],
+      "developingStage": "Delivered",
+      "extensions": 0,
+      "reviewRating": 4.7,
+      "createdAt": "2026-08-03",
+      "completedAt": "2026-08-18",
+      "deliveredAt": "2026-08-18"
+    }
+  },
+  "dailyUpdates": {
+    "upd_01": {
+      "projectId": "prj_novatech",
+      "userId": "tanvirDevUid0000000001",
+      "date": "2026-08-28",
+      "note": "Homepage hero + services section done. Waiting on brand photos from client.",
+      "createdAt": 1787912400000
+    },
+    "upd_02": {
+      "projectId": "prj_orbit",
+      "userId": "farhanaDevUid00000001",
+      "date": "2026-08-27",
+      "note": "Inventory module API wired. Starting dealer login flow tomorrow.",
+      "createdAt": 1787846700000
+    },
+    "upd_03": {
+      "projectId": "prj_greenleaf",
+      "userId": "imranFreeUid0000000001",
+      "date": "2026-08-21",
+      "note": "Blocked — client has not sent GSC / GBP access yet.",
+      "createdAt": 1787305200000
+    },
+    "upd_04": {
+      "projectId": "prj_metro",
+      "userId": "farhanaDevUid00000001",
+      "date": "2026-08-26",
+      "note": "UI kit v2 sent for review. Spacing tokens updated per last feedback.",
+      "createdAt": 1787753520000
+    },
+    "upd_05": {
+      "projectId": "prj_cafemenu",
+      "userId": "imranFreeUid0000000001",
+      "date": "2026-08-28",
+      "note": "Menu categories + item cards live on staging. Need cafe photos.",
+      "createdAt": 1787941800000
+    },
+    "upd_06": {
+      "projectId": "prj_brightshop",
+      "userId": "tanvirDevUid0000000001",
+      "date": "2026-08-22",
+      "note": "Woo store handed over. Payment + shipping tested with sample order.",
+      "createdAt": 1787396400000
+    }
+  },
+  "clientNotes": {
+    "note_01": {
+      "projectId": "prj_novatech",
+      "date": "2026-08-15",
+      "addedBy": "antuSalesUid0000000001",
+      "content": "Client wants a case-study section on the homepage, not a separate page."
+    },
+    "note_02": {
+      "projectId": "prj_orbit",
+      "date": "2026-08-19",
+      "addedBy": "protikSalesUid0000001",
+      "content": "Must support Bangla + English in the dealer portal from day one."
+    },
+    "note_03": {
+      "projectId": "prj_greenleaf",
+      "date": "2026-08-20",
+      "addedBy": "tauhidSalesUid0000001",
+      "content": "Owner travelling until 5 Sep — delayed credentials until then."
+    },
+    "note_04": {
+      "projectId": "prj_harbor",
+      "date": "2026-08-12",
+      "addedBy": "badolSalesUid0000000001",
+      "content": "Paused until they confirm the new logo. Do not publish current draft."
+    },
+    "note_05": {
+      "projectId": "prj_kidslearn",
+      "date": "2026-08-26",
+      "addedBy": "adibSalesUid0000000001",
+      "content": "Kickoff next week. They will share Figma + API docs on Monday."
+    }
+  }
+}

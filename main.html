@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Doptor Tech — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#20222A; --paper:#F5F3EE; --paper-2:#ECE9E1; --panel:#FFFFFF;
+    --charcoal:#1B1D24; --charcoal-2:#252832;
+    --teal:#2AA9A0; --teal-dark:#1E7F78;
+    --amber:#E0A526; --red:#C6483C; --green:#4C9A5B;
+    --slate:#7A7F8C; --line:#DCD8CE; --line-dark:#33363F;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  html,body{max-width:100%;overflow-x:hidden;}
+  body{margin:0;background:var(--charcoal);color:var(--ink);font-family:'Inter',sans-serif;}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;}
+  button{font-family:'Inter',sans-serif;cursor:pointer;border:none;border-radius:6px;}
+  input{font-family:'Inter',sans-serif;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:#fff;color:var(--ink);width:100%;}
+  label{font-size:12px;color:var(--slate);display:block;margin:10px 0 4px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+
+  #loginScreen{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:24px 16px;
+  }
+  .login-stack{width:100%;max-width:400px;display:flex;flex-direction:column;gap:10px;}
+
+  .profile-card{
+    background:var(--charcoal-2);
+    border:1px solid var(--line-dark);
+    border-radius:10px;
+    padding:12px 12px 10px;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);
+  }
+  .profile-card .pc-label{
+    font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--slate);margin:0 0 8px;padding:0 2px;
+  }
+  .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .profile-btn{
+    display:flex;align-items:center;gap:8px;
+    background:var(--charcoal);color:#C9C7C0;
+    padding:8px 9px;border-radius:8px;text-align:left;
+    border:1px solid transparent;font-size:12px;font-weight:600;
+    transition:background .15s,border-color .15s,color .15s;
+  }
+  .profile-btn:hover{background:#2c303a;color:#fff;}
+  .profile-btn.active{
+    background:rgba(42,169,160,.16);
+    border-color:var(--teal);
+    color:#fff;
+  }
+  .profile-btn .av{
+    width:24px;height:24px;border-radius:6px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;color:#fff;
+  }
+  .profile-btn .meta{min-width:0;}
+  .profile-btn .meta b{display:block;font-size:12px;font-weight:600;line-height:1.2;}
+  .profile-btn .meta span{display:block;font-size:10px;color:var(--slate);font-weight:500;margin-top:1px;}
+  .profile-btn.active .meta span{color:#9ad9d3;}
+
+  .login-card{
+    background:var(--paper);width:100%;padding:36px 32px;border-radius:10px;
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+  }
+  .login-card .stamp{
+    width:34px;height:34px;background:var(--teal);border-radius:6px;margin-bottom:14px;
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;
+    font-family:'Space Grotesk',sans-serif;
+  }
+  .login-card h1{font-size:20px;margin:0 0 2px;}
+  .login-card p.sub{color:var(--slate);font-size:13px;margin:0 0 20px;}
+  .btn{padding:10px 16px;border-radius:6px;font-weight:600;font-size:13px;}
+  .btn-primary{background:var(--charcoal);color:#fff;width:100%;margin-top:16px;}
+  .btn-primary:hover{background:var(--teal-dark);}
+  .btn-primary:disabled{opacity:.55;cursor:default;}
+  .err{color:var(--red);font-size:12px;margin-top:10px;min-height:0;}
+  .ok{font-size:12px;color:var(--green);margin-top:6px;}
+  .setup-note{font-size:11px;color:var(--slate);background:var(--paper-2);border-radius:6px;padding:8px 10px;margin-top:10px;line-height:1.5;}
+
+  @media(max-width:480px){
+    #loginScreen{align-items:flex-start;padding:16px 12px 28px;}
+    .login-card{padding:24px 18px;}
+    .profile-btn{padding:10px 9px;}
+    input{font-size:16px;}
+  }
+
+  #loadError{display:none;background:#3a1f1f;border:1px solid var(--red);color:#f2c9c4;padding:16px 20px;margin:20px;border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.6;white-space:pre-wrap;}
+  #loadError b{color:#fff;font-family:'Inter',sans-serif;display:block;margin-bottom:8px;font-size:14px;}
+  #loadError button{margin-top:10px;background:var(--red);color:#fff;padding:8px 14px;border-radius:6px;font-size:12px;}
+</style>
+</head>
+<body>
+
+<div id="loadError"></div>
+
+<div id="loginScreen">
+  <div class="login-stack">
+
+    <div class="profile-card">
+      <p class="pc-label">Switch login profile</p>
+      <div class="profile-grid" id="profileGrid"></div>
+    </div>
+
+    <div class="login-card">
+      <div class="stamp">DT</div>
+      <h1>Doptor Tech Ledger</h1>
+      <p class="sub" id="loginSub">Company portal — Admin</p>
+      <label>Email</label>
+      <input id="loginEmail" type="email" placeholder="you@doptortech.com" autocomplete="username">
+      <label>Password</label>
+      <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
+      <button class="btn btn-primary" id="signInBtn" onclick="doLogin()">Sign in</button>
+      <div style="text-align:right;margin-top:8px;">
+        <a href="#" style="font-size:12px;color:var(--teal-dark);text-decoration:none;" onclick="doForgotPassword();return false;">Forgot password?</a>
+      </div>
+      <div class="err" id="loginErr"></div>
+      <div class="ok" id="loginMsg"></div>
+      <div class="setup-note" id="setupNote">Pick a profile above, then sign in. You will open that portal.</div>
+    </div>
+
+  </div>
+</div>
+
+<script src="local-backend.js?v=20260829"></script>
+<script>
+const auth = firebase.auth();
+const db = firebase.firestore();
+const secondaryApp = firebase.initializeApp({}, "Secondary");
+const secondaryAuth = secondaryApp.auth();
+
+const ADMIN_EMAIL = "mdabdulquiyumbadol@gmail.com";
+const ADMIN_PASS  = "1234567";
+
+const COMPANY_ADMIN_ACCOUNTS = [
+  { name:"Sanaul", email:"sanaul.doptortech@gmail.com", pass:"12345678" }
+];
+function companyAdminByEmail(email){
+  const e = (email||"").trim().toLowerCase();
+  return COMPANY_ADMIN_ACCOUNTS.find(a => a.email.toLowerCase() === e) || null;
+}
+
+const SELLER_PASS = "1234567";
+const SELLER_ACCOUNTS = [
+  { name:"Antu",   email:"antu.doptortech@gmail.com" },
+  { name:"Protik", email:"protik.doptortech@gmail.com" },
+  { name:"Tauhid", email:"tauhid.doptortech@gmail.com" },
+  { name:"Adib",   email:"adib.doptortech@gmail.com" },
+  { name:"Badol",  email:"badol.doptortech@gmail.com" }
+];
+function sellerByEmail(email){
+  const e = (email||"").trim().toLowerCase();
+  return SELLER_ACCOUNTS.find(s => s.email.toLowerCase() === e) || null;
+}
+
+const PROFILES = [
+  { id:"company", file:"comapani.html",          label:"Company",  hint:"Admin",              roles:["Admin"],                         color:"#2AA9A0", initials:"CO" },
+  { id:"pm",      file:"Project manager.html",   label:"PM",       hint:"Manager / Lead",     roles:["Project Manager","Team Lead"],   color:"#E0A526", initials:"PM" },
+  { id:"seller",  file:"Seller.html",            label:"Sales",    hint:"Seller",             roles:["Sales"],                         color:"#C6483C", initials:"SL" },
+  { id:"dev",     file:"Dev.html",               label:"Dev",      hint:"Developer",          roles:["Developer","Freelancer"],        color:"#4C9A5B", initials:"DV" }
+];
+const PAGE_FILES = {
+  Admin:"comapani.html",
+  "Project Manager":"Project manager.html",
+  "Team Lead":"Project manager.html",
+  Sales:"Seller.html",
+  Developer:"Dev.html",
+  Freelancer:"Dev.html"
+};
+
+let selectedId = localStorage.getItem("dt_login_profile") || "company";
+if(!PROFILES.some(p => p.id === selectedId)) selectedId = "company";
+
+function selectedProfile(){
+  return PROFILES.find(p => p.id === selectedId) || PROFILES[0];
+}
+function profileForRole(role){
+  return PROFILES.find(p => p.roles.includes(role)) || null;
+}
+function portalTitle(p){
+  if(p.id === "company") return "Company";
+  if(p.label === "PM") return "Project Manager";
+  if(p.label === "Sales") return "Sales";
+  return "Developer";
+}
+
+function renderProfiles(){
+  document.getElementById("profileGrid").innerHTML = PROFILES.map(p => `
+    <button type="button" class="profile-btn${p.id===selectedId?' active':''}" onclick="switchProfile('${p.id}')">
+      <span class="av" style="background:${p.color}">${p.initials}</span>
+      <span class="meta"><b>${p.label}</b><span>${p.hint}</span></span>
+    </button>
+  `).join("");
+  const p = selectedProfile();
+  document.getElementById("loginSub").textContent = p.id === "company"
+    ? "Company portal — Admin"
+    : p.label === "PM" ? "Project Manager portal"
+    : p.label === "Sales" ? "Sales portal"
+    : "Developer portal";
+  document.getElementById("setupNote").textContent = p.id === "company"
+    ? "Company accounts sign in here only — same access as Sanaul."
+    : "Signing in opens the " + portalTitle(p) + " portal.";
+}
+
+function switchProfile(id){
+  selectedId = id;
+  localStorage.setItem("dt_login_profile", id);
+  document.getElementById("loginErr").textContent = "";
+  document.getElementById("loginMsg").textContent = "";
+  renderProfiles();
+}
+
+const APP_BUILD = "20260829";
+function goToPortal(file){
+  const sep = file.includes("?") ? "&" : "?";
+  location.href = encodeURI(file + sep + "v=" + APP_BUILD);
+}
+
+let loginAttempted = false;
+
+function isMissingUserErr(e){
+  const code = (e && e.code) || "";
+  const msg = String((e && e.message) || "").toLowerCase();
+  return code === "auth/user-not-found"
+    || code === "auth/invalid-login-credentials"
+    || code === "auth/invalid-credential"
+    || code === "auth/wrong-password"
+    || msg.includes("invalid-credential")
+    || msg.includes("invalid-login-credentials")
+    || msg.includes("user-not-found")
+    || msg.includes("wrong-password");
+}
+async function createAuthUserOnSecondary(email, pass){
+  try{
+    await secondaryAuth.createUserWithEmailAndPassword(email, pass);
+  }catch(e){
+    if(e.code !== "auth/email-already-in-use") throw e;
+  }finally{
+    try{ await secondaryAuth.signOut(); }catch(_){}
+  }
+}
+async function doLogin(){
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value.trim();
+  const errEl = document.getElementById("loginErr");
+  const msgEl = document.getElementById("loginMsg");
+  const btn = document.getElementById("signInBtn");
+  errEl.textContent = ""; msgEl.textContent = "";
+  if(!email || !pass){ errEl.textContent = "Enter email and password."; return; }
+  btn.disabled = true;
+  loginAttempted = true;
+  const picked = selectedProfile();
+  const companyAdmin = companyAdminByEmail(email);
+  const canSeedAdmin = picked.roles.includes("Admin")
+    && ((email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && pass === ADMIN_PASS)
+      || (companyAdmin && pass === companyAdmin.pass));
+  const canSeedSeller = picked.roles.includes("Sales") && sellerByEmail(email) && pass === SELLER_PASS;
+  const canSeed = canSeedAdmin || canSeedSeller;
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+    return;
+  }catch(e){
+    if(canSeed && firebase.localAuth && firebase.localAuth.setPasswordByEmail(email, pass)){
+      try{
+        await auth.signInWithEmailAndPassword(email, pass);
+        return;
+      }catch(_){}
+    }
+    if(!canSeed || !isMissingUserErr(e)){
+      errEl.textContent = e.message || String(e);
+      btn.disabled = false;
+      return;
+    }
+  }
+  try{
+    await createAuthUserOnSecondary(email, pass);
+    await auth.signInWithEmailAndPassword(email, pass);
+  }catch(e2){
+    errEl.textContent = (e2.code === "auth/email-already-in-use" || isMissingUserErr(e2))
+      ? "This email already has a different password. Ask an Admin to set a new one from User Manage."
+      : (e2.message || String(e2));
+    btn.disabled = false;
+  }
+}
+
+async function doForgotPassword(){
+  const email = document.getElementById("loginEmail").value.trim();
+  const errEl = document.getElementById("loginErr");
+  const msgEl = document.getElementById("loginMsg");
+  errEl.textContent = ""; msgEl.textContent = "";
+  if(!email){ errEl.textContent = "Enter your email above first, then click 'Forgot password?'"; return; }
+  try{
+    await auth.sendPasswordResetEmail(email);
+    msgEl.textContent = "Local login has no email reset. Ask a Company Admin to set a new password from User Manage.";
+  }catch(e){
+    msgEl.textContent = "Local login has no email reset. Ask a Company Admin to set a new password from User Manage.";
+  }
+}
+
+function showLoadError(title, err){
+  const el = document.getElementById("loadError");
+  const code = (err && err.code) ? err.code : "unknown";
+  const msg = (err && err.message) ? err.message : String(err);
+  el.style.display = "block";
+  el.innerHTML = `<b>${title}</b>Error code: ${code}\n${msg}`;
+  el.innerHTML += '<br><button onclick="auth.signOut();location.reload()">Sign out</button>';
+}
+
+auth.onAuthStateChanged(async (fbUser) => {
+  if(!fbUser){
+    document.getElementById("signInBtn").disabled = false;
+    return;
+  }
+  try{
+    const isSaEmail = fbUser.email && fbUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    const companyAdmin = companyAdminByEmail(fbUser.email);
+    const seller = sellerByEmail(fbUser.email);
+    const uref = db.collection("users").doc(fbUser.uid);
+    let data = null;
+    try{
+      const usnap = await uref.get();
+      if(usnap.exists) data = usnap.data();
+    }catch(readErr){
+      console.warn("profile read failed", readErr);
+    }
+    const seedDoc = companyAdmin
+      ? { name: companyAdmin.name, role:"Admin", team:"", workHours:"", timezone:"", contact: companyAdmin.email, active:true, profiles:[] }
+      : isSaEmail
+      ? { name:"Admin", role:"Admin", team:"", workHours:"", timezone:"", contact: fbUser.email, active:true, profiles:[] }
+      : seller
+      ? { name: seller.name, role:"Sales", team:"Sales", workHours:"", timezone:"", contact: seller.email, active:true, profiles:[] }
+      : null;
+    if(!data){
+      if(!seedDoc){
+        showLoadError("No profile record found", {code:"no-profile", message:"Your account exists in Auth but has no profile record yet. Ask an Admin to create your user record with your UID: " + fbUser.uid});
+        return;
+      }
+      data = { ...seedDoc };
+      try{ await uref.set(seedDoc); }catch(writeErr){ console.warn("profile write failed", writeErr); }
+    }
+    if(companyAdmin){
+      const patch = {};
+      if(data.role !== "Admin") patch.role = "Admin";
+      if(!data.name) patch.name = companyAdmin.name;
+      if(data.active === false) patch.active = true;
+      if(data.banned === true) patch.banned = false;
+      if(Object.keys(patch).length){
+        data = { ...data, ...patch };
+        try{ await uref.set(patch, { merge:true }); }catch(_){}
+      }
+    }
+    if(!data){
+      showLoadError("Account record missing", {code:"deleted", message:"Your user record no longer exists. Contact your Admin if this is a mistake."});
+      auth.signOut();
+      return;
+    }
+    if((data.active === false || data.banned === true) && !companyAdmin){
+      showLoadError("Account restricted", {code:"restricted", message:"This account has been restricted by an Admin."});
+      auth.signOut();
+      return;
+    }
+    const role = data.role;
+    const destByRole = PAGE_FILES[role];
+    const picked = selectedProfile();
+    const mine = profileForRole(role);
+    if(picked.roles.includes(role)){
+      loginAttempted = false;
+      goToPortal(picked.file);
+      return;
+    }
+    if(loginAttempted){
+      loginAttempted = false;
+      await auth.signOut();
+      const errEl = document.getElementById("loginErr");
+      const btn = document.getElementById("signInBtn");
+      if(role === "Admin"){
+        errEl.textContent = "This is a Company account. Sign in from the Company profile only.";
+      } else {
+        errEl.textContent = "This account cannot enter the " + portalTitle(picked) + " profile."
+          + (mine ? " Choose " + mine.label + " and sign in there." : "");
+      }
+      if(btn) btn.disabled = false;
+      return;
+    }
+    if(destByRole){
+      if(mine){
+        selectedId = mine.id;
+        localStorage.setItem("dt_login_profile", mine.id);
+      }
+      goToPortal(destByRole);
+      return;
+    }
+    showLoadError("Unknown role", {code:"unknown-role", message:"No portal is set up for the role: " + role});
+  }catch(err){
+    console.error("Auth/load failure:", err);
+    showLoadError("Couldn't load your data", err);
+  }
+});
+
+document.getElementById("loginPass").addEventListener("keydown", e => {
+  if(e.key === "Enter") doLogin();
+});
+document.getElementById("loginEmail").addEventListener("keydown", e => {
+  if(e.key === "Enter") document.getElementById("loginPass").focus();
+});
+
+renderProfiles();
+</script>
+</body>
+</html>
