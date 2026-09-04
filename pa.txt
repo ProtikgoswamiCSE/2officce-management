@@ -3,7 +3,7 @@
 1) Project folder e jao:
 cd "c:\Users\USER\Desktop\badol\2officce management-20260831T173307Z-1-001\2officce management"
 
-2) Server chalao:
+2) Server Run:
 node server.js
 
 3) Browser e khulun:

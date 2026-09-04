@@ -176,6 +176,20 @@
       "monthlyTarget": 0,
       "monthlyDeliveryTarget": 0,
       "loginEmail": "1@gmail.com"
+    },
+    "tkG9Fo8S5YVQYkNlXgqD": {
+      "name": "ppp",
+      "role": "Sales",
+      "team": "B",
+      "workHours": "9",
+      "contact": "protikgoswami5841@gmail.com",
+      "profiles": [
+        "0173674440"
+      ],
+      "active": true,
+      "monthlyTarget": 500,
+      "monthlyDeliveryTarget": 0,
+      "loginEmail": "12@gmail.com"
     }
   },
   "profiles": {
@@ -378,6 +392,16 @@
       "name": "sfdaas",
       "companyProfile": "Mobile App",
       "assignedSalesRep": "badolSalesUid0000000001"
+    },
+    "yP31IL9EFRm6TyE9Zt8p": {
+      "name": "Dip",
+      "companyProfile": "momin",
+      "assignedSalesRep": "protikSalesUid0000001"
+    },
+    "WyuSPMrHa7iWmGwvtKPr": {
+      "name": "ddip",
+      "companyProfile": "momin",
+      "assignedSalesRep": "tkG9Fo8S5YVQYkNlXgqD"
     }
   },
   "projects": {
@@ -648,26 +672,6 @@
       "reviewRating": null,
       "createdAt": "2026-09-01"
     },
-    "6TSjPcXQjBGTTNzBtfb8": {
-      "profileName": "2222",
-      "clientId": "Qhn8D8uBpIiibz09jNyt",
-      "teamLeadId": "",
-      "assignedDevId": "",
-      "salesOwnerId": "badolSalesUid0000000001",
-      "assignedPMId": "",
-      "status": "Not Started",
-      "priority": "Medium",
-      "startDate": "2026-09-04",
-      "deadline": "2026-09-16",
-      "budget": 900,
-      "profileTags": [
-        "momin"
-      ],
-      "developingStage": "",
-      "extensions": 0,
-      "reviewRating": null,
-      "createdAt": "2026-09-04"
-    },
     "Yrfx8CD2axk1FZAU7JTt": {
       "profileName": "111",
       "clientId": "hsVznxJzJ9FLz9frw0vk",
@@ -727,6 +731,46 @@
       "extensions": 0,
       "reviewRating": null,
       "createdAt": "2026-09-04"
+    },
+    "8sErJlgCKcOzvL0ajx0S": {
+      "profileName": "workpress",
+      "clientId": "yP31IL9EFRm6TyE9Zt8p",
+      "teamLeadId": "",
+      "assignedDevId": "",
+      "salesOwnerId": "badolSalesUid0000000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "Not Started",
+      "priority": "Medium",
+      "startDate": "2026-09-04",
+      "deadline": "2026-09-22",
+      "budget": 200,
+      "profileTags": [
+        "momin"
+      ],
+      "developingStage": "Discovery",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-09-04"
+    },
+    "I81yjhwydpMAZxdDdk2V": {
+      "profileName": "workpress",
+      "clientId": "WyuSPMrHa7iWmGwvtKPr",
+      "teamLeadId": "",
+      "assignedDevId": "",
+      "salesOwnerId": "tkG9Fo8S5YVQYkNlXgqD",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "Not Started",
+      "priority": "Medium",
+      "startDate": "2026-09-04",
+      "deadline": "2026-09-16",
+      "budget": 200,
+      "profileTags": [
+        "momin"
+      ],
+      "developingStage": "Discovery",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-09-04"
     }
   },
   "dailyUpdates": {
@@ -776,30 +820,40 @@
   "clientNotes": {
     "note_01": {
       "projectId": "prj_novatech",
+      "projectName": "NovaTech Corporate Site",
+      "clientName": "NovaTech Ltd",
       "date": "2026-08-15",
       "addedBy": "antuSalesUid0000000001",
       "content": "Client wants a case-study section on the homepage, not a separate page."
     },
     "note_02": {
       "projectId": "prj_orbit",
+      "projectName": "Orbit CRM App",
+      "clientName": "Orbit Systems",
       "date": "2026-08-19",
       "addedBy": "protikSalesUid0000001",
       "content": "Must support Bangla + English in the dealer portal from day one."
     },
     "note_03": {
       "projectId": "prj_greenleaf",
+      "projectName": "GreenLeaf Local SEO",
+      "clientName": "GreenLeaf Organics",
       "date": "2026-08-20",
       "addedBy": "tauhidSalesUid0000001",
       "content": "Owner travelling until 5 Sep — delayed credentials until then."
     },
     "note_04": {
       "projectId": "prj_harbor",
+      "projectName": "Harbor Landing Page",
+      "clientName": "Harbor Logistics",
       "date": "2026-08-12",
       "addedBy": "badolSalesUid0000000001",
       "content": "Paused until they confirm the new logo. Do not publish current draft."
     },
     "note_05": {
       "projectId": "prj_kidslearn",
+      "projectName": "KidsLearn Mobile App",
+      "clientName": "KidsLearn",
       "date": "2026-08-26",
       "addedBy": "adibSalesUid0000000001",
       "content": "Kickoff next week. They will share Figma + API docs on Monday."
@@ -826,26 +880,6 @@
       "reviewedBy": "sanaulAdminUid0000001",
       "clientId": "znt5NjBzdYmUMH7G7oN9",
       "projectId": "vTfl0dxhTpP7SM5qfEKG"
-    },
-    "XMVLzZKdC4EPvhIDfzJi": {
-      "clientName": "qqqqqq",
-      "profileName": "2222",
-      "profileTag": "momin",
-      "budget": 900,
-      "priority": "Medium",
-      "deadline": "2026-09-16",
-      "projectStatus": "Not Started",
-      "assignedDevId": "",
-      "salesOwnerId": "badolSalesUid0000000001",
-      "status": "approved",
-      "submittedAt": "2026-09-01",
-      "submittedBy": "protikSalesUid0000001",
-      "teamLeadId": "",
-      "assignedPMId": "",
-      "reviewedAt": "2026-09-04",
-      "reviewedBy": "sanaulAdminUid0000001",
-      "clientId": "Qhn8D8uBpIiibz09jNyt",
-      "projectId": "6TSjPcXQjBGTTNzBtfb8"
     },
     "FjAVowHikLPMroTLeiya": {
       "clientName": "dsdddd",
@@ -906,6 +940,46 @@
       "reviewedBy": "sanaulAdminUid0000001",
       "clientId": "Q1qus3LtyrXLSFA0l29E",
       "projectId": "Ra0CVDHDvBfAXq799wKr"
+    },
+    "FRT81JZEfsyFi0jnZOxq": {
+      "clientName": "Dip",
+      "profileName": "workpress",
+      "profileTag": "momin",
+      "budget": 200,
+      "priority": "Medium",
+      "deadline": "2026-09-22",
+      "projectStatus": "Not Started",
+      "assignedDevId": "",
+      "salesOwnerId": "protikSalesUid0000001",
+      "submittedBy": "protikSalesUid0000001",
+      "status": "approved",
+      "submittedAt": "2026-09-04",
+      "reviewedAt": "2026-09-04",
+      "reviewedBy": "sanaulAdminUid0000001",
+      "projectId": "8sErJlgCKcOzvL0ajx0S",
+      "teamLeadId": "",
+      "assignedPMId": "",
+      "clientId": "yP31IL9EFRm6TyE9Zt8p"
+    },
+    "Kwi5U8T4McK0ntDJypYq": {
+      "clientName": "ddip",
+      "profileName": "workpress",
+      "profileTag": "momin",
+      "budget": 200,
+      "priority": "Medium",
+      "deadline": "2026-09-16",
+      "projectStatus": "Not Started",
+      "assignedDevId": "",
+      "salesOwnerId": "tkG9Fo8S5YVQYkNlXgqD",
+      "submittedBy": "tkG9Fo8S5YVQYkNlXgqD",
+      "status": "approved",
+      "submittedAt": "2026-09-04",
+      "teamLeadId": "",
+      "assignedPMId": "",
+      "reviewedAt": "2026-09-04",
+      "reviewedBy": "sanaulAdminUid0000001",
+      "clientId": "WyuSPMrHa7iWmGwvtKPr",
+      "projectId": "I81yjhwydpMAZxdDdk2V"
     }
   }
 }

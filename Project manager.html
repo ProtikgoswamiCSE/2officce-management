@@ -324,6 +324,7 @@ let ALL_USERS = [];
 let ALL_CLIENTS = [];
 let ALL_PROJECTS = [];
 let PROJECT_CLIENT_SEARCH = '';
+let CLIENT_NOTE_SEARCH = '';
 let ALL_PROFILES = [];
 let ALL_STAGES = [];        // Developing Stages, Admin-managed (System Management)
 let ALL_STATUSES = [];      // Project Statuses, Admin-managed (System Management) — each {name, isDelivery, isDelayed}
@@ -1511,38 +1512,117 @@ async function saveUpdate(){
 
 /* ============================================================
    CLIENT NOTES
+   Everyone can view, add, edit, delete, and search.
    ============================================================ */
-async function renderNotes(){
-  const projects = visibleProjects();
-  const canPost = ["Developer","Freelancer","Sales","Project Manager","Admin"].includes(CURRENT_USER.role);
-  const snap = await db.collection('clientNotes').orderBy('date','desc').limit(100).get();
-  const notes = snap.docs.map(d=>({id:d.id,...d.data()})).filter(n=>projects.some(p=>p.id===n.projectId) || ["Admin","Project Manager"].includes(CURRENT_USER.role));
-  document.getElementById('main').innerHTML = `
-    <div class="topline"><h2>Client Notes</h2>${canPost?`<button class="add-btn" onclick="openNoteModal()">+ Add Note</button>`:''}</div>
-    <table><thead><tr><th>Date</th><th>Project</th><th>Note</th><th>Added By</th></tr></thead>
-    <tbody>${notes.map(n=>{
-      const p = ALL_PROJECTS.find(x=>x.id===n.projectId);
-      return `<tr><td class="mono">${n.date}</td><td>${p?p.profileName:'—'}</td><td>${n.content}</td><td>${userName(n.addedBy)}</td></tr>`;
-    }).join('') || '<tr><td class="empty" colspan="4">No client notes yet.</td></tr>'}</tbody></table>
-  `;
+let CACHED_CLIENT_NOTES = [];
+function onClientNoteSearch(q){
+  CLIENT_NOTE_SEARCH = q;
+  renderNotes({ fromSearch: true });
 }
-function openNoteModal(){
-  const myProjects = visibleProjects();
+function noteDisplayFields(n){
+  const p = ALL_PROJECTS.find(x=>x.id===n.projectId);
+  const cName = n.clientName || (p ? clientName(p.clientId) : '—');
+  const pName = n.projectName || (p ? p.profileName : '—') || '—';
+  return { cName, pName, by: userName(n.addedBy) };
+}
+function filterClientNotes(notes, q){
+  const s = String(q||'').trim().toLowerCase();
+  if(!s) return notes;
+  return notes.filter(n=>{
+    const { cName, pName, by } = noteDisplayFields(n);
+    return [n.date, cName, pName, n.content, by].some(v => String(v||'').toLowerCase().includes(s));
+  });
+}
+async function renderNotes(opts){
+  const fromSearch = opts && opts.fromSearch;
+  if(!fromSearch){
+    const snap = await db.collection('clientNotes').orderBy('date','desc').limit(100).get();
+    CACHED_CLIENT_NOTES = snap.docs.map(d=>({id:d.id,...d.data()}));
+  }
+  const notes = filterClientNotes(CACHED_CLIENT_NOTES, CLIENT_NOTE_SEARCH);
+  const emptyMsg = CLIENT_NOTE_SEARCH.trim()
+    ? `No notes match “${escHtml(CLIENT_NOTE_SEARCH.trim())}”.`
+    : 'No client notes yet.';
+  document.getElementById('main').innerHTML = `
+    <div class="topline"><h2>Client Notes</h2>
+      <div class="topline-actions">
+        <input class="project-search" id="clientNoteSearch" type="search" placeholder="Search notes…" value="${escHtml(CLIENT_NOTE_SEARCH||'')}" oninput="onClientNoteSearch(this.value)" autocomplete="off">
+        <button class="add-btn" onclick="openNoteModal()">+ Add Note</button>
+      </div>
+    </div>
+    <table><thead><tr><th>Date</th><th>Client</th><th>Project</th><th>Note</th><th>Added By</th><th></th></tr></thead>
+    <tbody>${notes.map(n=>{
+      const { cName, pName } = noteDisplayFields(n);
+      return `<tr>
+        <td class="mono">${escHtml(n.date||'')}</td>
+        <td>${escHtml(cName)}</td>
+        <td>${escHtml(pName)}</td>
+        <td>${escHtml(n.content||'')}</td>
+        <td>${escHtml(userName(n.addedBy))}</td>
+        <td class="row-actions">
+          <button onclick="openNoteModal('${n.id}')">Edit</button>
+          <button onclick="deleteNote('${n.id}')">Delete</button>
+        </td>
+      </tr>`;
+    }).join('') || `<tr><td class="empty" colspan="6">${emptyMsg}</td></tr>`}</tbody></table>
+  `;
+  if(fromSearch){
+    const searchEl = document.getElementById('clientNoteSearch');
+    if(searchEl){
+      searchEl.focus();
+      const len = searchEl.value.length;
+      searchEl.setSelectionRange(len, len);
+    }
+  }
+}
+async function deleteNote(id){
+  if(!confirm('Delete this client note?')) return;
+  await db.collection('clientNotes').doc(id).delete();
+  navigate('notes');
+}
+async function openNoteModal(id){
+  let n = {};
+  if(id){
+    const doc = await db.collection('clientNotes').doc(id).get();
+    if(doc.exists) n = {id:doc.id, ...doc.data()};
+  }
+  const p = n.projectId ? ALL_PROJECTS.find(x=>x.id===n.projectId) : null;
+  const clientVal = n.clientName || (p && clientName(p.clientId)!=='—' ? clientName(p.clientId) : '') || '';
+  const projectVal = n.projectName || (p ? (p.profileName||'') : '') || '';
   showModal(`
-    <h3>Add Client Note</h3>
-    <label>Project</label><select id="f_nproject">${myProjects.map(p=>`<option value="${p.id}">${p.profileName}</option>`).join('') || '<option value="">No projects assigned</option>'}</select>
-    <label>What the client said / requested</label><textarea id="f_ncontent"></textarea>
+    <h3>${id?'Edit Client Note':'Add Client Note'}</h3>
+    <label>Client Name</label><input id="f_nclient" value="${escHtml(clientVal)}" placeholder="Client name">
+    <label>Project</label><input id="f_nproject" value="${escHtml(projectVal)}" placeholder="Project name (optional)">
+    <label>What the client said / requested</label><textarea id="f_ncontent">${escHtml(n.content||'')}</textarea>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" onclick="saveNote()">Save</button>
+      <button class="btn-save" onclick="saveNote(${id?`'${id}'`:''})">Save</button>
     </div>
   `);
 }
-async function saveNote(){
-  const today = new Date().toISOString().slice(0,10);
-  await db.collection('clientNotes').add({
-    projectId: val('f_nproject'), date: today, content: val('f_ncontent'), addedBy: CURRENT_USER.uid
-  });
+async function saveNote(id){
+  const clientNameVal = val('f_nclient').trim();
+  const projectNameVal = val('f_nproject').trim();
+  const content = val('f_ncontent').trim();
+  if(!clientNameVal){ alert('Client name is required.'); return; }
+  if(!content){ alert('Note / description is required.'); return; }
+  const matched = projectNameVal
+    ? ALL_PROJECTS.find(x=>(x.profileName||'').trim().toLowerCase()===projectNameVal.toLowerCase())
+    : null;
+  const payload = {
+    projectId: matched ? matched.id : '',
+    projectName: projectNameVal,
+    clientName: clientNameVal,
+    content
+  };
+  if(id){
+    await db.collection('clientNotes').doc(id).update(payload);
+  } else {
+    const today = new Date().toISOString().slice(0,10);
+    await db.collection('clientNotes').add(Object.assign({}, payload, {
+      date: today, addedBy: CURRENT_USER.uid
+    }));
+  }
   closeModal(); navigate('notes');
 }
 

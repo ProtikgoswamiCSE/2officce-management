@@ -260,23 +260,28 @@ function buildSeedData() {
   });
 
   put("clientNotes", "note_01", {
-    projectId: "prj_novatech", date: "2026-08-15", addedBy: uidAntu,
+    projectId: "prj_novatech", projectName: "NovaTech Corporate Site", clientName: "NovaTech Ltd",
+    date: "2026-08-15", addedBy: uidAntu,
     content: "Client wants a case-study section on the homepage, not a separate page."
   });
   put("clientNotes", "note_02", {
-    projectId: "prj_orbit", date: "2026-08-19", addedBy: uidProtik,
+    projectId: "prj_orbit", projectName: "Orbit CRM App", clientName: "Orbit Systems",
+    date: "2026-08-19", addedBy: uidProtik,
     content: "Must support Bangla + English in the dealer portal from day one."
   });
   put("clientNotes", "note_03", {
-    projectId: "prj_greenleaf", date: "2026-08-20", addedBy: uidTauhid,
+    projectId: "prj_greenleaf", projectName: "GreenLeaf Local SEO", clientName: "GreenLeaf Organics",
+    date: "2026-08-20", addedBy: uidTauhid,
     content: "Owner travelling until 5 Sep — delayed credentials until then."
   });
   put("clientNotes", "note_04", {
-    projectId: "prj_harbor", date: "2026-08-12", addedBy: uidBadol,
+    projectId: "prj_harbor", projectName: "Harbor Landing Page", clientName: "Harbor Logistics",
+    date: "2026-08-12", addedBy: uidBadol,
     content: "Paused until they confirm the new logo. Do not publish current draft."
   });
   put("clientNotes", "note_05", {
-    projectId: "prj_kidslearn", date: "2026-08-26", addedBy: uidAdib,
+    projectId: "prj_kidslearn", projectName: "KidsLearn Mobile App", clientName: "KidsLearn",
+    date: "2026-08-26", addedBy: uidAdib,
     content: "Kickoff next week. They will share Figma + API docs on Monday."
   });
 
