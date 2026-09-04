@@ -54,6 +54,9 @@
   let memoryMeta = {};
   let remoteDbVersion = 0;
   let sseSource = null;
+  let storeWriteChain = Promise.resolve();
+  let storeWritesInFlight = 0;
+  let pendingStoreReload = false;
 
   function bootstrapFromServer() {
     if (typeof XMLHttpRequest === "undefined") return false;
@@ -76,9 +79,19 @@
   }
 
   function reloadFromServer(cb) {
+    // Never clobber in-memory writes mid-flight — that was dropping
+    // newly approved projects before they landed in All Projects.
+    if (storeWritesInFlight > 0) {
+      pendingStoreReload = true;
+      return;
+    }
     fetch("/api/db/bootstrap")
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => {
+        if (storeWritesInFlight > 0) {
+          pendingStoreReload = true;
+          return;
+        }
         memoryStore = data.store || {};
         memoryAuth = data.auth || {};
         memoryMeta = data.meta || {};
@@ -162,18 +175,54 @@
     return Promise.resolve();
   }
   function loadStore() { return readJson(STORE_KEY, {}); }
-  function saveStore(store) {
-    if (useFileDb) {
-      memoryStore = clone(store);
+  function putStoreWithRetry(buildStore) {
+    const maxAttempts = 8;
+    const attempt = (n) => {
+      storeWritesInFlight++;
+      const baseVersion = remoteDbVersion;
+      const next = buildStore();
+      memoryStore = clone(next);
       return fetch("/api/db/store", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(memoryStore)
-      }).then(r => {
+        body: JSON.stringify({ baseVersion, store: memoryStore })
+      }).then(async r => {
+        const data = await r.json().catch(() => ({}));
+        if (r.status === 409 || data.conflict) {
+          if (data.store) memoryStore = clone(data.store);
+          if (data.version) remoteDbVersion = data.version;
+          if (n + 1 >= maxAttempts) throw new Error("store save conflict");
+          return attempt(n + 1);
+        }
         if (!r.ok) throw new Error("store save failed");
-        return r.json();
-      }).then(data => {
-        if (data && data.version) remoteDbVersion = data.version;
+        if (data.store) memoryStore = clone(data.store);
+        if (data.version) remoteDbVersion = data.version;
+      }).finally(() => {
+        storeWritesInFlight = Math.max(0, storeWritesInFlight - 1);
+        if (storeWritesInFlight === 0 && pendingStoreReload) {
+          pendingStoreReload = false;
+          reloadFromServer();
+        }
+      });
+    };
+    return attempt(0);
+  }
+  function enqueueStoreMutation(mutator) {
+    const run = storeWriteChain.then(() =>
+      putStoreWithRetry(() => {
+        const store = clone(memoryStore);
+        mutator(store);
+        return store;
+      })
+    );
+    storeWriteChain = run.catch(() => {});
+    return run;
+  }
+  function saveStore(store) {
+    if (useFileDb) {
+      return enqueueStoreMutation(s => {
+        Object.keys(s).forEach(k => { delete s[k]; });
+        Object.assign(s, clone(store));
       });
     }
     writeJsonLocal(STORE_KEY, store);
@@ -348,26 +397,26 @@
         return makeDocSnap(id, (store[col] || {})[id]);
       },
       async set(data, opts) {
-        const store = loadStore();
-        const map = colMap(store, col);
-        const next = stamp(clone(data));
-        if (opts && opts.merge && map[id]) map[id] = Object.assign({}, map[id], next);
-        else map[id] = next;
-        await saveStore(store);
+        await enqueueStoreMutation(store => {
+          const map = colMap(store, col);
+          const next = stamp(clone(data));
+          if (opts && opts.merge && map[id]) map[id] = Object.assign({}, map[id], next);
+          else map[id] = next;
+        });
         notify(col, id);
       },
       async update(data) {
-        const store = loadStore();
-        const map = colMap(store, col);
-        if (!map[id]) throw new Error("No document to update: " + col + "/" + id);
-        map[id] = Object.assign({}, map[id], stamp(clone(data)));
-        await saveStore(store);
+        await enqueueStoreMutation(store => {
+          const map = colMap(store, col);
+          if (!map[id]) throw new Error("No document to update: " + col + "/" + id);
+          map[id] = Object.assign({}, map[id], stamp(clone(data)));
+        });
         notify(col, id);
       },
       async delete() {
-        const store = loadStore();
-        if (store[col]) delete store[col][id];
-        await saveStore(store);
+        await enqueueStoreMutation(store => {
+          if (store[col]) delete store[col][id];
+        });
         notify(col, id);
       },
       onSnapshot(cb, errCb) {

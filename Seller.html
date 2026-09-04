@@ -71,6 +71,8 @@
   .topline{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;border-bottom:2px solid var(--ink);padding-bottom:12px;gap:10px;flex-wrap:wrap;}
   .topline h2{margin:0;font-size:22px;}
   .topline .role-badge{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--teal-dark);font-weight:700;}
+  .topline-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .project-search{width:220px;max-width:100%;padding:8px 12px;font-size:13px;}
   .add-btn{background:var(--teal);color:#fff;padding:9px 14px;font-size:13px;font-weight:600;}
   .add-btn:hover{background:var(--teal-dark);}
 
@@ -338,6 +340,7 @@ let CURRENT_USER = null;   // {uid, name, role, team, ...}
 let ALL_USERS = [];
 let ALL_CLIENTS = [];
 let ALL_PROJECTS = [];
+let PROJECT_CLIENT_SEARCH = '';
 let ALL_PROFILES = [];
 let ALL_STAGES = [];        // Developing Stages, Admin-managed (System Management)
 let ALL_STATUSES = [];      // Project Statuses, Admin-managed (System Management) — each {name, isDelivery, isDelayed}
@@ -1057,6 +1060,34 @@ function renderProjectTable(projects, showActions=true){
   </tr>`).join('')}
   </tbody></table>`;
 }
+function filterProjectsByClient(projects, q){
+  q = (q||'').trim().toLowerCase();
+  if(!q) return projects;
+  return projects.filter(p=>{
+    const hay = [
+      p.profileName||'',
+      (p.profileTags||[]).join(' '),
+      clientName(p.clientId),
+      userName(p.salesOwnerId),
+      userName(p.assignedDevId),
+      p.status||'',
+      p.priority||'',
+      p.deadline||'',
+      p.budget!=null && p.budget!=='' ? String(p.budget) : '',
+      p.budget ? ('$'+p.budget) : ''
+    ].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+}
+function onAllProjectClientSearch(q){
+  PROJECT_CLIENT_SEARCH = q;
+  const wrap = document.getElementById('projectTableWrap');
+  if(!wrap) return;
+  const all = sortProjectsByDeadline(ALL_PROJECTS);
+  const filtered = filterProjectsByClient(all, q);
+  wrap.innerHTML = filtered.length ? renderAllProjectTable(filtered) : `<div class="empty">No projects match “${escHtml(q.trim())}”.</div>`;
+  tickCountdowns();
+}
 function renderProjects(){
   const projects = visibleProjects();
   const canCreate = ["Admin","Project Manager"].includes(CURRENT_USER.role);
@@ -1088,11 +1119,16 @@ function renderAllProjectTable(projects){
   </tbody></table>`;
 }
 function renderAllProjects(){
-  const projects = sortProjectsByDeadline(ALL_PROJECTS);
+  const all = sortProjectsByDeadline(ALL_PROJECTS);
+  const projects = filterProjectsByClient(all, PROJECT_CLIENT_SEARCH);
   document.getElementById('main').innerHTML = `
-    <div class="topline"><h2>All Projects</h2></div>
+    <div class="topline"><h2>All Projects</h2>
+      <div class="topline-actions">
+        <input class="project-search" id="projectClientSearch" type="search" placeholder="Search all columns…" value="${escHtml(PROJECT_CLIENT_SEARCH||'')}" oninput="onAllProjectClientSearch(this.value)" autocomplete="off">
+      </div>
+    </div>
     <div class="setup-note" style="margin-bottom:14px;max-width:720px;">Company-wide project list — view only. <b>Green rows</b> are your projects. Sorted by deadline: <b>time remaining on top</b>, <b>overdue at bottom</b> (same order for everyone).</div>
-    ${renderAllProjectTable(projects)}
+    <div id="projectTableWrap">${projects.length ? renderAllProjectTable(projects) : (PROJECT_CLIENT_SEARCH ? `<div class="empty">No projects match “${escHtml(PROJECT_CLIENT_SEARCH.trim())}”.</div>` : `<div class="empty">No projects yet.</div>`)}</div>
   `;
 }
 function openProjectModal(id){
@@ -1108,7 +1144,7 @@ function openProjectModal(id){
   showModal(`
     <h3>${id? 'Edit Project':'New Project'}</h3>
     <label>Profile Name</label><input id="f_name" value="${p.profileName||''}">
-    <label>Client</label><select id="f_client">${ALL_CLIENTS.map(c=>`<option value="${c.id}" ${p.clientId===c.id?'selected':''}>${c.name}</option>`).join('')}</select>
+    <label>Client</label><input id="f_client" value="${escHtml(clientName(p.clientId)!=='—' ? clientName(p.clientId) : '')}" placeholder="Type client name">
     <label>Team Lead</label><select id="f_lead"><option value="">— none —</option>${leads.map(u=>`<option value="${u.id}" ${p.teamLeadId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
     <label>Assigned Developer / Freelancer</label><select id="f_dev"><option value="">— unassigned —</option>${devs.map(u=>`<option value="${u.id}" ${p.assignedDevId===u.id?'selected':''}>${u.name} (${u.role})</option>`).join('')}</select>
     <label>Sales Owner</label><select id="f_sales"><option value="">— none —</option>${salesUsers.map(u=>`<option value="${u.id}" ${p.salesOwnerId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
@@ -1140,17 +1176,31 @@ function openProjectModal(id){
     </div>
   `);
 }
+async function findOrCreateClientId(req){
+  const name = (req.clientName||'').trim();
+  const existing = ALL_CLIENTS.find(c=>(c.name||'').trim().toLowerCase()===name.toLowerCase());
+  if(existing) return existing.id;
+  const ref = await db.collection('clients').add({
+    name,
+    companyProfile: req.companyProfile || req.profileTag || '',
+    assignedSalesRep: req.salesOwnerId||''
+  });
+  return ref.id;
+}
 async function saveProject(id){
   if(CURRENT_USER.role==="Sales"){
     alert("Sales cannot add or edit projects directly. Use New Client Entry — the project is added to All Projects only after Admin or PM approval.");
     return;
   }
   const existing = id ? ALL_PROJECTS.find(p=>p.id===id) : null;
+  const clientNameTyped = val('f_client').trim();
+  if(!clientNameTyped){ alert('Client name is required.'); return; }
+  const clientId = await findOrCreateClientId({ clientName: clientNameTyped, salesOwnerId: val('f_sales') });
   const newStatus = val('f_status');
   const newStage = val('f_stage');
   const canReview = ["Admin","Project Manager"].includes(CURRENT_USER.role);
   const doc = {
-    profileName: val('f_name'), clientId: val('f_client'), teamLeadId: val('f_lead'),
+    profileName: val('f_name'), clientId, teamLeadId: val('f_lead'),
     assignedDevId: val('f_dev'), salesOwnerId: val('f_sales'), status: newStatus,
     priority: val('f_priority'), startDate: val('f_start'), deadline: val('f_deadline'),
     budget: Number(val('f_budget'))||0,
@@ -1237,7 +1287,8 @@ async function saveClient(id){
    ============================================================ */
 function myClientRequests(){
   const uid = CURRENT_USER && (CURRENT_USER.uid || CURRENT_USER.id);
-  return ALL_CLIENT_REQUESTS.filter(r=>r.salesOwnerId===uid);
+  // Keep everything this sales user added or owns — pending, rejected, and approved
+  return ALL_CLIENT_REQUESTS.filter(r=>r.salesOwnerId===uid || r.submittedBy===uid);
 }
 function requestStatusStyle(status){
   if(status==="approved") return 'background:#DEF0E1;color:var(--green);';
@@ -1254,6 +1305,7 @@ function defaultProjectStatus(){
   return s ? s.name : "Not Started";
 }
 function clientRequestEntryRowHtml(r){
+  const canEdit = r.status==='pending' || r.status==='rejected';
   return `<tr>
     <td>${escHtml(r.profileName||'')}<div class="mono" style="color:var(--slate);font-size:11px;">${escHtml(r.profileTag||'')}</div></td>
     <td>${escHtml(r.clientName||'')}</td>
@@ -1263,16 +1315,22 @@ function clientRequestEntryRowHtml(r){
     <td><span class="tag pri-${r.priority||'Medium'}">${r.priority||'Medium'}</span></td>
     <td class="mono">${r.deadline||'—'}</td>
     <td class="mono">${r.budget?('$'+r.budget):'—'}</td>
-    <td class="row-actions">${r.status==='pending' ? `<button onclick="openClientRequestModal('${r.id}')">Edit</button>` : '—'}</td>
+    <td class="row-actions">${canEdit ? `<button onclick="openClientRequestModal('${r.id}')">${r.status==='rejected'?'Fix & Resubmit':'Edit'}</button>` : '—'}</td>
   </tr>`;
 }
 function renderNewClientEntry(){
-  const rows = myClientRequests().sort((a,b)=>(b.submittedAt||'').localeCompare(a.submittedAt||''));
+  const rows = myClientRequests().sort((a,b)=>{
+    const order = {pending:0, rejected:1, approved:2};
+    const ao = order[a.status] ?? 9;
+    const bo = order[b.status] ?? 9;
+    if(ao!==bo) return ao-bo;
+    return (b.submittedAt||'').localeCompare(a.submittedAt||'');
+  });
   document.getElementById('main').innerHTML = `
     <div class="topline"><h2>New Client Entry</h2>
       <button class="add-btn" onclick="openClientRequestModal()">+ Submit entry</button>
     </div>
-    <div class="setup-note" style="margin-bottom:14px;max-width:820px;">Submit here for <b>approval only</b> — nothing is added to All Projects yet. After <b>Admin</b> or <b>Project Manager</b> approves, the client + project will be created automatically.</div>
+    <div class="setup-note" style="margin-bottom:14px;max-width:860px;">Everything you submit stays on this page (<b>Pending</b>, <b>Approved</b>, <b>Rejected</b>). Approved ones also appear in All Projects. Rejected → use <b>Fix & Resubmit</b>.</div>
     <table><thead><tr>
       <th>Profile</th><th>Client</th><th>Sales</th><th>Developer</th><th>Approval</th><th>Priority</th><th>Deadline</th><th>Budget</th><th></th>
     </tr></thead><tbody>
@@ -1282,19 +1340,23 @@ function renderNewClientEntry(){
 }
 function openClientRequestModal(id){
   const r = id ? ALL_CLIENT_REQUESTS.find(x=>x.id===id) : {};
+  const uid = CURRENT_USER.uid || CURRENT_USER.id;
   if(id){
-    const uid = CURRENT_USER.uid || CURRENT_USER.id;
-    if(r.status!=='pending'){ alert('Only pending entries can be edited.'); return; }
-    if(r.salesOwnerId!==uid){ alert('You can only edit your own entries.'); return; }
+    if(r.status!=='pending' && r.status!=='rejected'){ alert('Only pending or rejected entries can be edited.'); return; }
+    if(r.salesOwnerId!==uid && r.submittedBy!==uid){ alert('You can only edit your own entries.'); return; }
   }
   const devs = ALL_USERS.filter(u=>["Developer","Freelancer"].includes(u.role));
+  const salesUsers = ALL_USERS.filter(u=>u.role==="Sales");
+  const defaultSalesId = r.salesOwnerId || uid;
   const pStatus = r.projectStatus || defaultProjectStatus();
+  const isRejected = r.status==='rejected';
   showModal(`
-    <h3>${id?'Edit entry':'New client entry'}</h3>
+    <h3>${id?(isRejected?'Fix & resubmit':'Edit entry'):'New client entry'}</h3>
+    ${isRejected ? `<div class="setup-note" style="margin-bottom:12px;">This was rejected. Fix the details and submit again for approval.</div>` : ''}
     <label>Profile (project name)</label><input id="f_cr_project" value="${escHtml(r.profileName||'')}" placeholder="e.g. NovaTech Corporate Site">
     <label>Profile type</label><select id="f_cr_tag"><option value="">— none —</option>${ALL_PROFILES.map(pr=>`<option value="${escHtml(pr.name)}" ${r.profileTag===pr.name?'selected':''}>${escHtml(pr.name)}</option>`).join('')}</select>
     <label>Client</label><input id="f_cr_client" value="${escHtml(r.clientName||'')}" placeholder="e.g. NovaTech Ltd">
-    <label>Sales</label><input value="${escHtml(userName(CURRENT_USER.uid||CURRENT_USER.id))}" readonly>
+    <label>Sales</label><select id="f_cr_sales"><option value="">— none —</option>${salesUsers.map(u=>`<option value="${u.id}" ${defaultSalesId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
     <label>Developer</label><select id="f_cr_dev"><option value="">— unassigned —</option>${devs.map(u=>`<option value="${u.id}" ${r.assignedDevId===u.id?'selected':''}>${u.name} (${u.role})</option>`).join('')}</select>
     <label>Status</label><select id="f_cr_pstatus">${ALL_STATUSES.map(s=>`<option ${pStatus===s.name?'selected':''}>${s.name}</option>`).join('')}</select>
     <div class="setup-note" style="margin-top:8px;">This is saved as a <b>pending request</b>. The project status above is applied only after Admin/PM approval.</div>
@@ -1303,7 +1365,7 @@ function openClientRequestModal(id){
     <label>Budget</label><input id="f_cr_budget" type="number" value="${r.budget||''}" placeholder="$">
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" onclick="saveClientRequest('${id||''}')">Submit</button>
+      <button class="btn-save" onclick="saveClientRequest('${id||''}')">${isRejected?'Resubmit':'Submit'}</button>
     </div>
   `);
 }
@@ -1311,6 +1373,9 @@ async function saveClientRequest(id){
   const clientName = val('f_cr_client').trim();
   const profileName = val('f_cr_project').trim();
   if(!clientName || !profileName){ alert('Client and Profile (project name) are required.'); return; }
+  const uid = CURRENT_USER.uid || CURRENT_USER.id;
+  const existing = id ? ALL_CLIENT_REQUESTS.find(r=>r.id===id) : null;
+  const wasRejected = existing && existing.status==='rejected';
   const doc = {
     clientName,
     profileName,
@@ -1320,21 +1385,28 @@ async function saveClientRequest(id){
     deadline: val('f_cr_deadline'),
     projectStatus: val('f_cr_pstatus') || defaultProjectStatus(),
     assignedDevId: val('f_cr_dev'),
-    salesOwnerId: CURRENT_USER.uid || CURRENT_USER.id
+    salesOwnerId: val('f_cr_sales') || uid,
+    submittedBy: (existing && existing.submittedBy) || uid
   };
   if(id){
-    const existing = ALL_CLIENT_REQUESTS.find(r=>r.id===id);
-    if(!existing || existing.status!=='pending'){ alert('Only pending entries can be edited.'); return; }
+    if(!existing || (existing.status!=='pending' && existing.status!=='rejected')){ alert('Only pending or rejected entries can be edited.'); return; }
+    if(existing.salesOwnerId!==uid && existing.submittedBy!==uid){ alert('You can only edit your own entries.'); return; }
     doc.status = 'pending';
+    doc.reviewedAt = null;
+    doc.reviewedBy = null;
+    doc.projectId = null;
     await db.collection('clientRequests').doc(id).update(doc);
   } else {
     doc.status = 'pending';
     doc.submittedAt = new Date().toISOString().slice(0,10);
-    doc.submittedBy = CURRENT_USER.uid || CURRENT_USER.id;
+    doc.submittedBy = uid;
     await db.collection('clientRequests').add(doc);
   }
   closeModal();
-  alert('Submitted for approval. It will appear in All Projects only after Admin or PM approves.');
+  alert(wasRejected
+    ? 'Resubmitted for approval. It stays on this page.'
+    : 'Submitted for approval. It stays on this page (Pending / Approved / Rejected).');
+  await loadAll();
   navigate('newClientEntry');
 }
 

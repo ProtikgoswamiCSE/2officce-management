@@ -358,6 +358,26 @@
       "name": "dsdddd",
       "companyProfile": "Rahatul",
       "assignedSalesRep": "protikSalesUid0000001"
+    },
+    "Xr8pWN39Y3yvfwDJXATw": {
+      "name": "xxxxxxxxx",
+      "companyProfile": "momin",
+      "assignedSalesRep": "adibSalesUid0000000001"
+    },
+    "Qhn8D8uBpIiibz09jNyt": {
+      "name": "qqqqqq",
+      "companyProfile": "momin",
+      "assignedSalesRep": "badolSalesUid0000000001"
+    },
+    "pADnB3IxxJdaMbtUc9u0": {
+      "name": "pppp",
+      "companyProfile": "SEO",
+      "assignedSalesRep": "badolSalesUid0000000001"
+    },
+    "Q1qus3LtyrXLSFA0l29E": {
+      "name": "sfdaas",
+      "companyProfile": "Mobile App",
+      "assignedSalesRep": "badolSalesUid0000000001"
     }
   },
   "projects": {
@@ -376,7 +396,7 @@
       "profileTags": [
         "Web Development"
       ],
-      "developingStage": "Delivered",
+      "developingStage": "Development",
       "extensions": 0,
       "reviewRating": null,
       "createdAt": "2026-08-04",
@@ -568,28 +588,6 @@
       "completedAt": "2026-08-28",
       "deliveredAt": "2026-08-28"
     },
-    "prj_fittrack": {
-      "profileName": "FitTrack Brand Landing",
-      "clientId": "cli_fittrack",
-      "teamLeadId": "nabilaLeadUid00000001",
-      "assignedDevId": "farhanaDevUid00000001",
-      "salesOwnerId": "antuSalesUid0000000001",
-      "assignedPMId": "rafiqPmUid00000000001",
-      "status": "Completed",
-      "priority": "Medium",
-      "startDate": "2026-08-03",
-      "deadline": "2026-08-20",
-      "budget": 2400,
-      "profileTags": [
-        "UI/UX Design"
-      ],
-      "developingStage": "Delivered",
-      "extensions": 0,
-      "reviewRating": 4.7,
-      "createdAt": "2026-08-03",
-      "completedAt": "2026-08-18",
-      "deliveredAt": "2026-08-18"
-    },
     "ynENh3dtMxKvn5nCGXto": {
       "profileName": "ui",
       "clientId": "cli_brightshop",
@@ -609,6 +607,126 @@
       "reviewRating": null,
       "assignedPMId": "sanaulAdminUid0000001",
       "createdAt": "2026-09-01"
+    },
+    "Ra0CVDHDvBfAXq799wKr": {
+      "profileName": "444",
+      "clientId": "Q1qus3LtyrXLSFA0l29E",
+      "teamLeadId": "",
+      "assignedDevId": "tanvirDevUid0000000001",
+      "salesOwnerId": "badolSalesUid0000000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "In Progress",
+      "priority": "Medium",
+      "startDate": "2026-09-04",
+      "deadline": "2026-09-28",
+      "budget": 2424,
+      "profileTags": [
+        "Mobile App"
+      ],
+      "developingStage": "Discovery",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-09-04"
+    },
+    "vTfl0dxhTpP7SM5qfEKG": {
+      "profileName": "fadsljkasd",
+      "clientId": "znt5NjBzdYmUMH7G7oN9",
+      "teamLeadId": "",
+      "assignedDevId": "",
+      "salesOwnerId": "protikSalesUid0000001",
+      "assignedPMId": "",
+      "status": "Not Started",
+      "priority": "Medium",
+      "startDate": "2026-09-01",
+      "deadline": "2026-10-09",
+      "budget": 0,
+      "profileTags": [
+        "SEO"
+      ],
+      "developingStage": "",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-09-01"
+    },
+    "6TSjPcXQjBGTTNzBtfb8": {
+      "profileName": "2222",
+      "clientId": "Qhn8D8uBpIiibz09jNyt",
+      "teamLeadId": "",
+      "assignedDevId": "",
+      "salesOwnerId": "badolSalesUid0000000001",
+      "assignedPMId": "",
+      "status": "Not Started",
+      "priority": "Medium",
+      "startDate": "2026-09-04",
+      "deadline": "2026-09-16",
+      "budget": 900,
+      "profileTags": [
+        "momin"
+      ],
+      "developingStage": "",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-09-04"
+    },
+    "Yrfx8CD2axk1FZAU7JTt": {
+      "profileName": "111",
+      "clientId": "hsVznxJzJ9FLz9frw0vk",
+      "teamLeadId": "nabilaLeadUid00000001",
+      "assignedDevId": "",
+      "salesOwnerId": "protikSalesUid0000001",
+      "assignedPMId": "rafiqPmUid00000000001",
+      "status": "Not Started",
+      "priority": "Medium",
+      "startDate": "2026-09-01",
+      "deadline": "2026-09-02",
+      "budget": 100,
+      "profileTags": [
+        "Rahatul"
+      ],
+      "developingStage": "",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-09-01"
+    },
+    "AFthtxY26HssUXhL6dZA": {
+      "profileName": "222",
+      "clientId": "Xr8pWN39Y3yvfwDJXATw",
+      "teamLeadId": "",
+      "assignedDevId": "tanvirDevUid0000000001",
+      "salesOwnerId": "adibSalesUid0000000001",
+      "assignedPMId": "",
+      "status": "Not Started",
+      "priority": "Medium",
+      "startDate": "2026-09-04",
+      "deadline": "2026-09-30",
+      "budget": 300,
+      "profileTags": [
+        "momin"
+      ],
+      "developingStage": "",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-09-04"
+    },
+    "H3mGDDeanmLDk26wraxS": {
+      "profileName": "444",
+      "clientId": "pADnB3IxxJdaMbtUc9u0",
+      "teamLeadId": "",
+      "assignedDevId": "tanvirDevUid0000000001",
+      "salesOwnerId": "badolSalesUid0000000001",
+      "assignedPMId": "",
+      "status": "Not Started",
+      "priority": "Medium",
+      "startDate": "2026-09-04",
+      "deadline": "2026-09-16",
+      "budget": 4000,
+      "profileTags": [
+        "SEO"
+      ],
+      "developingStage": "",
+      "extensions": 0,
+      "reviewRating": null,
+      "createdAt": "2026-09-04"
     }
   },
   "dailyUpdates": {
@@ -711,21 +829,23 @@
     },
     "XMVLzZKdC4EPvhIDfzJi": {
       "clientName": "qqqqqq",
-      "profileName": "ui",
+      "profileName": "2222",
       "profileTag": "momin",
       "budget": 900,
       "priority": "Medium",
       "deadline": "2026-09-16",
       "projectStatus": "Not Started",
       "assignedDevId": "",
-      "salesOwnerId": "protikSalesUid0000001",
-      "status": "rejected",
+      "salesOwnerId": "badolSalesUid0000000001",
+      "status": "approved",
       "submittedAt": "2026-09-01",
       "submittedBy": "protikSalesUid0000001",
       "teamLeadId": "",
       "assignedPMId": "",
-      "reviewedAt": "2026-09-01",
-      "reviewedBy": "sanaulAdminUid0000001"
+      "reviewedAt": "2026-09-04",
+      "reviewedBy": "sanaulAdminUid0000001",
+      "clientId": "Qhn8D8uBpIiibz09jNyt",
+      "projectId": "6TSjPcXQjBGTTNzBtfb8"
     },
     "FjAVowHikLPMroTLeiya": {
       "clientName": "dsdddd",
@@ -746,6 +866,46 @@
       "reviewedBy": "sanaulAdminUid0000001",
       "clientId": "hsVznxJzJ9FLz9frw0vk",
       "projectId": "Yrfx8CD2axk1FZAU7JTt"
+    },
+    "4pjLeftjATf7MBFCd9KE": {
+      "clientName": "xxxxxxxxx",
+      "profileName": "222",
+      "profileTag": "momin",
+      "budget": 300,
+      "priority": "Medium",
+      "deadline": "2026-09-30",
+      "projectStatus": "Not Started",
+      "assignedDevId": "tanvirDevUid0000000001",
+      "salesOwnerId": "adibSalesUid0000000001",
+      "status": "approved",
+      "submittedAt": "2026-09-04",
+      "submittedBy": "antuSalesUid0000000001",
+      "teamLeadId": "",
+      "assignedPMId": "",
+      "reviewedAt": "2026-09-04",
+      "reviewedBy": "sanaulAdminUid0000001",
+      "clientId": "Xr8pWN39Y3yvfwDJXATw",
+      "projectId": "AFthtxY26HssUXhL6dZA"
+    },
+    "rpiXOOPOdLzXVTUuXMUm": {
+      "clientName": "sfdaas",
+      "profileName": "444",
+      "profileTag": "Mobile App",
+      "budget": 2424,
+      "priority": "Medium",
+      "deadline": "2026-09-28",
+      "projectStatus": "In Progress",
+      "assignedDevId": "tanvirDevUid0000000001",
+      "salesOwnerId": "badolSalesUid0000000001",
+      "status": "approved",
+      "submittedAt": "2026-09-04",
+      "submittedBy": "antuSalesUid0000000001",
+      "teamLeadId": "",
+      "assignedPMId": "",
+      "reviewedAt": "2026-09-04",
+      "reviewedBy": "sanaulAdminUid0000001",
+      "clientId": "Q1qus3LtyrXLSFA0l29E",
+      "projectId": "Ra0CVDHDvBfAXq799wKr"
     }
   }
 }

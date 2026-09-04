@@ -46,9 +46,47 @@ function writeJsonFile(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf8");
 }
 
+/** Approved clientRequests must always have a matching project row. */
+function ensureApprovedProjectsInStore(store) {
+  if (!store || typeof store !== "object") return store || {};
+  if (!store.projects) store.projects = {};
+  const reqs = store.clientRequests || {};
+  Object.keys(reqs).forEach(id => {
+    const r = reqs[id];
+    if (!r || r.status !== "approved") return;
+    let pid = r.projectId;
+    if (!pid) {
+      pid = id;
+      r.projectId = pid;
+    }
+    if (store.projects[pid]) return;
+    const day = r.reviewedAt || r.submittedAt || new Date().toISOString().slice(0, 10);
+    store.projects[pid] = {
+      profileName: r.profileName || "",
+      clientId: r.clientId || "",
+      teamLeadId: r.teamLeadId || "",
+      assignedDevId: r.assignedDevId || "",
+      salesOwnerId: r.salesOwnerId || "",
+      assignedPMId: r.assignedPMId || "",
+      status: r.projectStatus || "Not Started",
+      priority: r.priority || "Medium",
+      startDate: day,
+      deadline: r.deadline || "",
+      budget: r.budget || 0,
+      profileTags: r.profileTag ? [r.profileTag] : [],
+      developingStage: r.developingStage || "",
+      extensions: 0,
+      reviewRating: null,
+      createdAt: day
+    };
+  });
+  return store;
+}
+
 function loadBootstrap() {
+  const store = ensureApprovedProjectsInStore(readJsonFile(FILES.store, {}));
   return {
-    store: readJsonFile(FILES.store, {}),
+    store,
     auth: readJsonFile(FILES.auth, {}),
     meta: readJsonFile(FILES.meta, {}),
     version: dbVersion
@@ -141,9 +179,36 @@ async function handleApi(req, res) {
 
   if (url === "/api/db/store" && req.method === "PUT") {
     const body = await readBody(req);
-    writeJsonFile(FILES.store, body || {});
+    const wrapped = body && typeof body === "object" && body.store && Object.prototype.hasOwnProperty.call(body, "baseVersion");
+    const incoming = wrapped ? body.store : body;
+    const baseVersion = wrapped ? Number(body.baseVersion) : null;
+
+    if (baseVersion != null && baseVersion !== dbVersion) {
+      return sendJson(res, 409, {
+        ok: false,
+        conflict: true,
+        version: dbVersion,
+        store: ensureApprovedProjectsInStore(readJsonFile(FILES.store, {}))
+      });
+    }
+
+    const nextStore = ensureApprovedProjectsInStore(incoming || {});
+    // Never drop projects that approved requests still point at
+    const prev = readJsonFile(FILES.store, {});
+    if (prev.projects) {
+      if (!nextStore.projects) nextStore.projects = {};
+      Object.keys(prev.projects).forEach(pid => {
+        if (!nextStore.projects[pid]) {
+          const stillNeeded = Object.values(nextStore.clientRequests || {}).some(
+            r => r && r.status === "approved" && r.projectId === pid
+          );
+          if (stillNeeded) nextStore.projects[pid] = prev.projects[pid];
+        }
+      });
+    }
+    writeJsonFile(FILES.store, nextStore);
     broadcastChange();
-    return sendJson(res, 200, { ok: true, version: dbVersion });
+    return sendJson(res, 200, { ok: true, version: dbVersion, store: nextStore });
   }
 
   if (url === "/api/db/auth" && req.method === "PUT") {

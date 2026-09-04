@@ -72,6 +72,8 @@
   .topline{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;border-bottom:2px solid var(--ink);padding-bottom:12px;gap:10px;flex-wrap:wrap;}
   .topline h2{margin:0;font-size:22px;}
   .topline .role-badge{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--teal-dark);font-weight:700;}
+  .topline-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .project-search{width:220px;max-width:100%;padding:8px 12px;font-size:13px;}
   .add-btn{background:var(--teal);color:#fff;padding:9px 14px;font-size:13px;font-weight:600;}
   .add-btn:hover{background:var(--teal-dark);}
 
@@ -346,6 +348,7 @@ let USER_ORDER = [];
 let USER_ROW_DRAGGING = false;
 let ALL_CLIENTS = [];
 let ALL_PROJECTS = [];
+let PROJECT_CLIENT_SEARCH = '';
 let ALL_PROFILES = [];
 let ALL_STAGES = [];        // Developing Stages, Admin-managed (System Management)
 let ALL_STATUSES = [];      // Project Statuses, Admin-managed (System Management) — each {name, isDelivery, isDelayed}
@@ -1064,6 +1067,7 @@ function latestUpdate(projectId){
 function renderProjectTable(projects, showActions=true){
   if(!projects.length) return `<div class="empty">No projects yet.</div>`;
   const canEdit = ["Admin","Project Manager","Team Lead"].includes(CURRENT_USER.role);
+  const canDelete = ["Admin","Project Manager"].includes(CURRENT_USER.role);
   return `<table><thead><tr>
     <th>Profile</th><th>Client</th><th>Sales</th><th>Developer</th><th>Status</th><th>Priority</th><th>Deadline</th>
     ${CURRENT_USER.role!=="Freelancer" ? "<th>Budget</th>" : ""}
@@ -1078,19 +1082,54 @@ function renderProjectTable(projects, showActions=true){
     <td><span class="tag pri-${p.priority}">${p.priority}</span></td>
     <td class="mono">${p.deadline||'—'}<br><span class="live-countdown" data-deadline="${p.deadline||''}">—</span></td>
     ${CURRENT_USER.role!=="Freelancer" ? `<td class="mono">${p.budget?('$'+p.budget):'—'}</td>` : ""}
-    ${showActions && canEdit ? `<td class="row-actions"><button onclick="openProjectModal('${p.id}')">Edit</button></td>` : ""}
+    ${showActions && canEdit ? `<td class="row-actions">
+      <button onclick="openProjectModal('${p.id}')">Edit</button>
+      ${canDelete ? `<button onclick="deleteProject('${p.id}')" style="color:var(--red);">Delete</button>` : ''}
+    </td>` : ""}
   </tr>`).join('')}
   </tbody></table>`;
 }
+function filterProjectsByClient(projects, q){
+  q = (q||'').trim().toLowerCase();
+  if(!q) return projects;
+  return projects.filter(p=>{
+    const hay = [
+      p.profileName||'',
+      (p.profileTags||[]).join(' '),
+      clientName(p.clientId),
+      userName(p.salesOwnerId),
+      userName(p.assignedDevId),
+      p.status||'',
+      p.priority||'',
+      p.deadline||'',
+      p.budget!=null && p.budget!=='' ? String(p.budget) : '',
+      p.budget ? ('$'+p.budget) : ''
+    ].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+}
+function onProjectClientSearch(q){
+  PROJECT_CLIENT_SEARCH = q;
+  const wrap = document.getElementById('projectTableWrap');
+  if(!wrap) return;
+  const all = sortProjectsByDeadline(visibleProjects());
+  const filtered = filterProjectsByClient(all, q);
+  wrap.innerHTML = filtered.length ? renderProjectTable(filtered) : `<div class="empty">No projects match “${escHtml(q.trim())}”.</div>`;
+  tickCountdowns();
+}
 function renderProjects(){
-  const projects = sortProjectsByDeadline(visibleProjects());
+  const all = sortProjectsByDeadline(visibleProjects());
+  const projects = filterProjectsByClient(all, PROJECT_CLIENT_SEARCH);
   const canCreate = ["Admin","Project Manager"].includes(CURRENT_USER.role);
   document.getElementById('main').innerHTML = `
     <div class="topline"><h2>All Projects</h2>
-      ${canCreate? `<button class="add-btn" onclick="openProjectModal()">+ New Project</button>`:''}
+      <div class="topline-actions">
+        <input class="project-search" id="projectClientSearch" type="search" placeholder="Search all columns…" value="${escHtml(PROJECT_CLIENT_SEARCH||'')}" oninput="onProjectClientSearch(this.value)" autocomplete="off">
+        ${canCreate? `<button class="add-btn" onclick="openProjectModal()">+ New Project</button>`:''}
+      </div>
     </div>
     <div class="setup-note" style="margin-bottom:14px;max-width:720px;">Company-wide project list. Sorted by deadline: <b>time remaining on top</b>, <b>overdue at bottom</b> (same order for everyone).</div>
-    ${renderProjectTable(projects)}
+    <div id="projectTableWrap">${projects.length ? renderProjectTable(projects) : (PROJECT_CLIENT_SEARCH ? `<div class="empty">No projects match “${escHtml(PROJECT_CLIENT_SEARCH.trim())}”.</div>` : `<div class="empty">No projects yet.</div>`)}</div>
   `;
 }
 function openProjectModal(id){
@@ -1102,7 +1141,7 @@ function openProjectModal(id){
   showModal(`
     <h3>${id? 'Edit Project':'New Project'}</h3>
     <label>Profile Name</label><input id="f_name" value="${p.profileName||''}">
-    <label>Client</label><select id="f_client">${ALL_CLIENTS.map(c=>`<option value="${c.id}" ${p.clientId===c.id?'selected':''}>${c.name}</option>`).join('')}</select>
+    <label>Client</label><input id="f_client" value="${escHtml(clientName(p.clientId)!=='—' ? clientName(p.clientId) : '')}" placeholder="Type client name">
     <label>Team Lead</label><select id="f_lead"><option value="">— none —</option>${leads.map(u=>`<option value="${u.id}" ${p.teamLeadId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
     <label>Assigned Developer / Freelancer</label><select id="f_dev"><option value="">— unassigned —</option>${devs.map(u=>`<option value="${u.id}" ${p.assignedDevId===u.id?'selected':''}>${u.name} (${u.role})</option>`).join('')}</select>
     <label>Sales Owner</label><select id="f_sales"><option value="">— none —</option>${salesUsers.map(u=>`<option value="${u.id}" ${p.salesOwnerId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
@@ -1136,11 +1175,14 @@ function openProjectModal(id){
 }
 async function saveProject(id){
   const existing = id ? ALL_PROJECTS.find(p=>p.id===id) : null;
+  const clientNameTyped = val('f_client').trim();
+  if(!clientNameTyped){ alert('Client name is required.'); return; }
+  const clientId = await findOrCreateClientId({ clientName: clientNameTyped, salesOwnerId: val('f_sales') });
   const newStatus = val('f_status');
   const newStage = val('f_stage');
   const canReview = ["Admin","Project Manager"].includes(CURRENT_USER.role);
   const doc = {
-    profileName: val('f_name'), clientId: val('f_client'), teamLeadId: val('f_lead'),
+    profileName: val('f_name'), clientId, teamLeadId: val('f_lead'),
     assignedDevId: val('f_dev'), salesOwnerId: val('f_sales'), status: newStatus,
     priority: val('f_priority'), startDate: val('f_start'), deadline: val('f_deadline'),
     budget: Number(val('f_budget'))||0,
@@ -1175,6 +1217,18 @@ async function saveProject(id){
     await db.collection('projects').add(doc);
   }
   closeModal(); await refreshAndRender();
+}
+async function deleteProject(id){
+  if(!["Admin","Project Manager"].includes(CURRENT_USER.role)) return;
+  const p = ALL_PROJECTS.find(x=>x.id===id);
+  const label = p ? (p.profileName || clientName(p.clientId) || 'this project') : 'this project';
+  if(!confirm(`Delete project "${label}"? Linked New Client Entry will also be removed. This cannot be undone.`)) return;
+  const linkedRequests = ALL_CLIENT_REQUESTS.filter(r=>r.projectId===id);
+  await db.collection('projects').doc(id).delete();
+  for(const r of linkedRequests){
+    await db.collection('clientRequests').doc(r.id).delete();
+  }
+  await refreshAndRender();
 }
 
 /* ============================================================
@@ -1241,10 +1295,14 @@ function defaultProjectStage(){
   const s = ALL_STAGES.find(x=>!x.isDelivery);
   return s ? s.name : "";
 }
+function activeClientRequests(){
+  return ALL_CLIENT_REQUESTS.filter(r=>r.status==="pending" || r.status==="rejected");
+}
 function clientRequestRowHtml(r, compact){
-  const actions = r.status==="pending"
-    ? `<button onclick="openClientRequestReviewModal('${r.id}')">Review</button>`
-    : `<button onclick="openClientRequestReviewModal('${r.id}')">View</button>`;
+  let actions = '';
+  if(r.status==="pending") actions = `<button onclick="openClientRequestReviewModal('${r.id}')">Review</button>`;
+  else if(r.status==="rejected") actions = `<button onclick="openClientRequestReviewModal('${r.id}')">Fix & Approve</button>`;
+  else actions = `<button onclick="openClientRequestReviewModal('${r.id}')">View</button>`;
   const pStatus = r.projectStatus || defaultProjectStatus();
   return `<tr>
     <td>${escHtml(r.profileName||'')}<div class="mono" style="color:var(--slate);font-size:11px;">${escHtml(r.profileTag||'')}</div>
@@ -1279,8 +1337,8 @@ function renderClientApproval(){
     document.getElementById('main').innerHTML = '<div class="empty">Not available for your role.</div>';
     return;
   }
-  const rows = ALL_CLIENT_REQUESTS.slice().sort((a,b)=>{
-    const order = {pending:0, approved:1, rejected:2};
+  const rows = activeClientRequests().sort((a,b)=>{
+    const order = {pending:0, rejected:1};
     const ao = order[a.status] ?? 9;
     const bo = order[b.status] ?? 9;
     if(ao!==bo) return ao-bo;
@@ -1288,11 +1346,11 @@ function renderClientApproval(){
   });
   document.getElementById('main').innerHTML = `
     <div class="topline"><h2>New Client Approval</h2></div>
-    <div class="setup-note" style="margin-bottom:14px;max-width:760px;"><b>Approve</b> → client + project created in <b>All Projects</b>. <b>Reject</b> → nothing is added to All Projects.</div>
+    <div class="setup-note" style="margin-bottom:14px;max-width:820px;"><b>Approve</b> → client + project goes to <b>All Projects</b> (and leaves this page). <b>Reject</b> → stays here so you can <b>Fix & Approve</b> later.</div>
     <table><thead><tr>
       <th>Profile</th><th>Client</th><th>Sales</th><th>Developer</th><th>Status</th><th>Priority</th><th>Deadline</th><th>Budget</th><th></th>
     </tr></thead><tbody>
-    ${rows.map(r=>clientRequestRowHtml(r,false)).join('') || '<tr><td class="empty" colspan="9">No client entries yet.</td></tr>'}
+    ${rows.map(r=>clientRequestRowHtml(r,false)).join('') || '<tr><td class="empty" colspan="9">No pending or rejected entries.</td></tr>'}
     </tbody></table>
   `;
 }
@@ -1300,31 +1358,39 @@ function openClientRequestReviewModal(id){
   if(!canReviewClientRequests()) return;
   const r = ALL_CLIENT_REQUESTS.find(x=>x.id===id);
   if(!r) return;
+  if(r.status==="approved"){ alert('Approved entries are in All Projects and no longer shown here.'); return; }
   const devs = ALL_USERS.filter(u=>["Developer","Freelancer"].includes(u.role));
+  const salesUsers = ALL_USERS.filter(u=>u.role==="Sales");
   const leads = ALL_USERS.filter(u=>u.role==="Team Lead");
   const pms = ALL_USERS.filter(u=>u.role==="Project Manager");
   const pending = r.status==="pending";
+  const rejected = r.status==="rejected";
+  const editable = pending || rejected;
   const pStatus = r.projectStatus || defaultProjectStatus();
+  const title = pending ? 'Review entry' : (rejected ? 'Fix rejected entry' : 'View entry');
   showModal(`
-    <h3>${pending?'Review entry':'View entry'} — ${escHtml(r.clientName||'')}</h3>
-    <label>Profile (project name)</label><input id="f_cr_project" value="${escHtml(r.profileName||'')}" ${pending?'':'readonly'}>
-    <label>Profile type</label>${pending
+    <h3>${title} — ${escHtml(r.clientName||'')}</h3>
+    ${rejected ? `<div class="setup-note" style="margin-bottom:12px;">This was rejected. Edit the details, then <b>Approve</b> (adds to All Projects) or <b>Reopen as pending</b>.</div>` : ''}
+    <label>Profile (project name)</label><input id="f_cr_project" value="${escHtml(r.profileName||'')}" ${editable?'':'readonly'}>
+    <label>Profile type</label>${editable
       ? `<select id="f_cr_tag"><option value="">— none —</option>${ALL_PROFILES.map(pr=>`<option value="${escHtml(pr.name)}" ${r.profileTag===pr.name?'selected':''}>${escHtml(pr.name)}</option>`).join('')}</select>`
       : `<input value="${escHtml(r.profileTag||'—')}" readonly>`}
-    <label>Client</label><input id="f_cr_client" value="${escHtml(r.clientName||'')}" ${pending?'':'readonly'}>
-    <label>Sales</label><input value="${escHtml(userName(r.salesOwnerId))}" readonly>
-    <label>Developer</label>${pending
+    <label>Client</label><input id="f_cr_client" value="${escHtml(r.clientName||'')}" ${editable?'':'readonly'}>
+    <label>Sales</label>${editable
+      ? `<select id="f_cr_sales"><option value="">— none —</option>${salesUsers.map(u=>`<option value="${u.id}" ${r.salesOwnerId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>`
+      : `<input value="${escHtml(userName(r.salesOwnerId))}" readonly>`}
+    <label>Developer</label>${editable
       ? `<select id="f_cr_dev"><option value="">— unassigned —</option>${devs.map(u=>`<option value="${u.id}" ${r.assignedDevId===u.id?'selected':''}>${u.name} (${u.role})</option>`).join('')}</select>`
       : `<input value="${escHtml(userName(r.assignedDevId))}" readonly>`}
-    <label>Status</label>${pending
+    <label>Status</label>${editable
       ? `<select id="f_cr_pstatus">${ALL_STATUSES.map(s=>`<option ${pStatus===s.name?'selected':''}>${s.name}</option>`).join('')}</select>`
       : `<input value="${escHtml(pStatus)}" readonly>`}
-    <label>Priority</label>${pending
+    <label>Priority</label>${editable
       ? `<select id="f_cr_priority">${PRIORITIES.map(p=>`<option ${(r.priority||'Medium')===p?'selected':''}>${p}</option>`).join('')}</select>`
       : `<input value="${escHtml(r.priority||'Medium')}" readonly>`}
-    <label>Deadline</label><input id="f_cr_deadline" type="date" value="${r.deadline||''}" ${pending?'':'readonly'}>
-    <label>Budget</label><input id="f_cr_budget" type="number" value="${r.budget||''}" ${pending?'':'readonly'}>
-    ${pending ? `
+    <label>Deadline</label><input id="f_cr_deadline" type="date" value="${r.deadline||''}" ${editable?'':'readonly'}>
+    <label>Budget</label><input id="f_cr_budget" type="number" value="${r.budget||''}" ${editable?'':'readonly'}>
+    ${editable ? `
     <label>Team Lead</label><select id="f_cr_lead"><option value="">— none —</option>${leads.map(u=>`<option value="${u.id}" ${r.teamLeadId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
     <label>Project Manager</label><select id="f_cr_pm"><option value="">— none —</option>${pms.map(u=>`<option value="${u.id}" ${r.assignedPMId===u.id?'selected':''}>${u.name}</option>`).join('')}</select>
     ` : ''}
@@ -1333,6 +1399,11 @@ function openClientRequestReviewModal(id){
       ${pending ? `
         <button class="btn-cancel" style="color:var(--red);" onclick="saveClientRequestReview('${id}','reject')">Reject</button>
         <button class="btn-cancel" onclick="saveClientRequestReview('${id}','save')">Save edits</button>
+        <button class="btn-save" onclick="saveClientRequestReview('${id}','approve')">Approve</button>
+      ` : ''}
+      ${rejected ? `
+        <button class="btn-cancel" onclick="saveClientRequestReview('${id}','save')">Save edits</button>
+        <button class="btn-cancel" onclick="saveClientRequestReview('${id}','reopen')">Reopen as pending</button>
         <button class="btn-save" onclick="saveClientRequestReview('${id}','approve')">Approve</button>
       ` : ''}
     </div>
@@ -1347,6 +1418,7 @@ function clientRequestFieldsFromForm(){
     priority: val('f_cr_priority') || 'Medium',
     deadline: val('f_cr_deadline'),
     projectStatus: val('f_cr_pstatus') || defaultProjectStatus(),
+    salesOwnerId: val('f_cr_sales'),
     assignedDevId: val('f_cr_dev'),
     teamLeadId: val('f_cr_lead'),
     assignedPMId: val('f_cr_pm')
@@ -1367,6 +1439,7 @@ async function saveClientRequestReview(id, action){
   if(!canReviewClientRequests()) return;
   const req = ALL_CLIENT_REQUESTS.find(r=>r.id===id);
   if(!req) return;
+  if(req.status==="approved"){ alert('This entry is already approved and in All Projects.'); return; }
   const fields = clientRequestFieldsFromForm();
   if(!fields.clientName || !fields.profileName){
     alert('Client name and project name are required.');
@@ -1375,9 +1448,22 @@ async function saveClientRequestReview(id, action){
   const today = new Date().toISOString().slice(0,10);
   const reviewer = CURRENT_USER.uid || CURRENT_USER.id;
   if(action==="save"){
-    if(req.status!=="pending"){ alert('Only pending entries can be edited.'); return; }
+    if(req.status!=="pending" && req.status!=="rejected"){ alert('Only pending or rejected entries can be edited.'); return; }
     await db.collection('clientRequests').doc(id).update(fields);
     closeModal(); navigate('clientApproval');
+    return;
+  }
+  if(action==="reopen"){
+    if(req.status!=="rejected"){ alert('Only rejected entries can be reopened.'); return; }
+    await db.collection('clientRequests').doc(id).update(Object.assign({}, fields, {
+      status:'pending',
+      reviewedAt:null,
+      reviewedBy:null,
+      projectId:null
+    }));
+    closeModal();
+    alert('Reopened as pending. You can review and approve it again.');
+    navigate('clientApproval');
     return;
   }
   if(action==="reject"){
@@ -1390,12 +1476,12 @@ async function saveClientRequestReview(id, action){
       projectId:null
     });
     closeModal();
-    alert('Rejected. This project was not added to All Projects.');
+    alert('Rejected. It stays on this page — use Fix & Approve when ready.');
     navigate('clientApproval');
     return;
   }
   if(action==="approve"){
-    if(req.status!=="pending"){ alert('This entry was already reviewed.'); return; }
+    if(req.status!=="pending" && req.status!=="rejected"){ alert('This entry cannot be approved.'); return; }
     if(req.projectId){ alert('This entry is already approved and linked to All Projects.'); return; }
     if(!confirm('Approve and add this project to All Projects?')) return;
     const merged = Object.assign({}, req, fields);
@@ -1426,7 +1512,8 @@ async function saveClientRequestReview(id, action){
     }));
     closeModal();
     alert('Approved! Project is now in All Projects.');
-    navigate('clientApproval');
+    await loadAll();
+    navigate('projects');
   }
 }
 
