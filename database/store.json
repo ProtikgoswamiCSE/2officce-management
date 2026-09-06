@@ -43,7 +43,7 @@
       "profiles": []
     },
     "rafiqPmUid00000000001": {
-      "name": "Rafiq Hasan",
+      "name": "hudai",
       "role": "Project Manager",
       "team": "Delivery",
       "workHours": "9am–6pm GMT+6",
@@ -53,11 +53,13 @@
       "profiles": [
         "Web",
         "Mobile"
-      ]
+      ],
+      "monthlyTarget": 0,
+      "monthlyDeliveryTarget": 0
     },
     "nabilaLeadUid00000001": {
       "name": "Nabila Rahman",
-      "role": "Team Lead",
+      "role": "Developer",
       "team": "Team Alpha",
       "workHours": "10am–7pm GMT+6",
       "timezone": "GMT+6",
@@ -66,7 +68,9 @@
       "profiles": [
         "Web",
         "WordPress"
-      ]
+      ],
+      "monthlyTarget": 0,
+      "monthlyDeliveryTarget": 0
     },
     "tanvirDevUid0000000001": {
       "name": "Tanvir Ahmed",
@@ -98,7 +102,7 @@
     },
     "imranFreeUid0000000001": {
       "name": "Imran Hossain",
-      "role": "Freelancer",
+      "role": "Developer",
       "team": "External",
       "workHours": "flexible GMT+6",
       "timezone": "GMT+6",
@@ -108,7 +112,8 @@
         "SEO",
         "WordPress"
       ],
-      "monthlyDeliveryTarget": 2
+      "monthlyDeliveryTarget": 2,
+      "monthlyTarget": 0
     },
     "antuSalesUid0000000001": {
       "name": "Antu",
@@ -119,18 +124,20 @@
       "contact": "antu.doptortech@gmail.com",
       "active": true,
       "profiles": [],
-      "monthlyTarget": 8000
+      "monthlyTarget": 8000,
+      "banned": false
     },
     "protikSalesUid0000001": {
       "name": "Protik",
-      "role": "Sales",
+      "role": "Team Lead",
       "team": "Sales",
       "workHours": "10am–8pm GMT+6",
       "timezone": "GMT+6",
       "contact": "protik.doptortech@gmail.com",
       "active": true,
       "profiles": [],
-      "monthlyTarget": 10000
+      "monthlyTarget": 10000,
+      "monthlyDeliveryTarget": 0
     },
     "tauhidSalesUid0000001": {
       "name": "Tauhid",
@@ -469,7 +476,7 @@
     "prj_brightshop": {
       "profileName": "BrightShop Woo Store",
       "clientId": "cli_brightshop",
-      "teamLeadId": "nabilaLeadUid00000001",
+      "teamLeadId": "protikSalesUid0000001",
       "assignedDevId": "tanvirDevUid0000000001",
       "salesOwnerId": "adibSalesUid0000000001",
       "assignedPMId": "rafiqPmUid00000000001",
@@ -676,10 +683,10 @@
       "profileName": "111",
       "clientId": "hsVznxJzJ9FLz9frw0vk",
       "teamLeadId": "nabilaLeadUid00000001",
-      "assignedDevId": "",
+      "assignedDevId": "farhanaDevUid00000001",
       "salesOwnerId": "protikSalesUid0000001",
       "assignedPMId": "rafiqPmUid00000000001",
-      "status": "Not Started",
+      "status": "In Progress",
       "priority": "Medium",
       "startDate": "2026-09-01",
       "deadline": "2026-09-02",
@@ -756,7 +763,7 @@
       "profileName": "workpress",
       "clientId": "WyuSPMrHa7iWmGwvtKPr",
       "teamLeadId": "",
-      "assignedDevId": "",
+      "assignedDevId": "imranFreeUid0000000001",
       "salesOwnerId": "tkG9Fo8S5YVQYkNlXgqD",
       "assignedPMId": "rafiqPmUid00000000001",
       "status": "Not Started",

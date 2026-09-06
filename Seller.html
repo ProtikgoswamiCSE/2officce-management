@@ -80,6 +80,8 @@
   .stat-card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:6px;padding:12px 16px;min-width:0;}
   .stat-card.warn{border-left-color:var(--amber);}
   .stat-card.danger{border-left-color:var(--red);}
+  .stat-card.clickable{cursor:pointer;transition:background .15s ease,box-shadow .15s ease;}
+  .stat-card.clickable:hover{background:var(--paper-2);box-shadow:0 1px 4px rgba(20,21,26,.08);}
   .stat-card .num{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;}
   .stat-card .lbl{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:.04em;}
 
@@ -148,12 +150,33 @@
   .empty{padding:30px;text-align:center;color:var(--slate);font-size:13px;}
 
   /* modal */
-  #modalBg{display:none;position:fixed;inset:0;background:rgba(20,21,26,.5);align-items:center;justify-content:center;z-index:50;}
-  #modal{background:#fff;width:460px;max-height:88vh;overflow-y:auto;border-radius:10px;padding:24px 26px;}
-  #modal h3{margin:0 0 4px;font-size:17px;}
+  #modalBg{display:none;position:fixed;inset:0;background:rgba(20,21,26,.5);align-items:center;justify-content:center;z-index:50;padding:16px;box-sizing:border-box;-webkit-overflow-scrolling:touch;}
+  #modal{background:#fff;width:460px;max-width:100%;max-height:88vh;overflow-y:auto;border-radius:10px;padding:24px 26px;box-sizing:border-box;}
+  #modal.wide{width:min(960px,96vw);max-height:92vh;}
+  #modal h3{margin:0 0 4px;font-size:17px;line-height:1.3;word-break:break-word;}
+  #modal .table-scroll{margin:0 0 8px;}
+  .breakdown-section{margin-top:16px;}
+  .breakdown-section h4{margin:0 0 8px;font-size:13px;color:var(--slate);text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .breakdown-section table{width:100%;font-size:13px;}
+  .breakdown-section .table-scroll table{min-width:480px;}
+  .breakdown-section a.breakdown-name{color:var(--ink);text-decoration:none;font-weight:600;cursor:pointer;display:inline-block;padding:6px 0;min-height:28px;}
+  .breakdown-section a.breakdown-name:hover{color:var(--teal-dark);text-decoration:underline;}
   .modal-actions{display:flex;gap:8px;margin-top:18px;}
   .modal-actions .btn-cancel{background:var(--paper-2);color:var(--ink);flex:1;padding:9px;}
   .modal-actions .btn-save{background:var(--teal);color:#fff;flex:1;padding:9px;font-weight:600;}
+  .person-summary{display:flex;flex-wrap:wrap;gap:6px 12px;margin:0 0 14px;font-size:13px;color:var(--slate);}
+  .person-summary .ps-item{white-space:nowrap;}
+  .person-projects-mobile{display:none;}
+  .pp-cards{display:flex;flex-direction:column;gap:10px;}
+  .pp-card{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--panel);}
+  .pp-card-title{font-size:14px;font-weight:700;line-height:1.35;word-break:break-word;}
+  .pp-card-sub{font-size:11px;color:var(--slate);margin-top:3px;font-family:'IBM Plex Mono',monospace;}
+  .pp-card-tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 8px;}
+  .pp-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;}
+  .pp-card-grid .k{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);margin-bottom:2px;font-weight:600;}
+  .pp-card-grid .v{font-size:13px;word-break:break-word;line-height:1.35;}
+  .pp-card-grid .pp-deadline{grid-column:1 / -1;}
+  .pp-card .live-countdown{display:inline-block;margin-top:2px;}
   .setup-note{font-size:11px;color:var(--slate);background:var(--paper-2);border-radius:6px;padding:8px 10px;margin-top:10px;line-height:1.5;}
   .live-countdown{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--teal-dark);white-space:nowrap;}
   .live-countdown.overdue{color:var(--red);font-weight:700;}
@@ -198,6 +221,7 @@
     .top-row,.lb-grid{grid-template-columns:1fr;}
     #modalBg{padding:12px;align-items:flex-start;}
     #modal{width:min(460px,100%);padding:20px 16px;max-height:min(86vh,100%);}
+    #modal.wide{width:min(960px,100%);max-height:min(90vh,100%);}
     .lb-mini-stats{max-width:100%;justify-content:flex-start;}
     input,select,textarea,.btn,.nav-btn{font-size:16px;}
     .stage-select{min-width:0;max-width:100%;}
@@ -216,9 +240,67 @@
     .lb-panel{padding:12px 10px 6px;}
     .lb-row{flex-wrap:wrap;align-items:flex-start;}
     .lb-mini-stats{width:100%;margin-top:4px;}
-    .modal-actions{flex-direction:column;}
     #main{padding:12px 10px 24px;}
     .live-countdown{white-space:normal;}
+
+    /* Full-screen friendly popup on phones */
+    #modalBg{
+      padding:0;
+      align-items:stretch;
+      justify-content:stretch;
+      background:rgba(20,21,26,.55);
+    }
+    #modal,
+    #modal.wide{
+      width:100%;
+      max-width:100%;
+      height:100dvh;
+      max-height:100dvh;
+      border-radius:0;
+      padding:14px 12px calc(14px + env(safe-area-inset-bottom,0px));
+    }
+    #modal h3{font-size:16px;margin-bottom:6px;}
+    #modal > p{font-size:12px !important;line-height:1.45;}
+    .breakdown-section{margin-top:14px;}
+    .breakdown-section h4{font-size:12px;margin-bottom:6px;}
+    .breakdown-section table{font-size:12px;}
+    .breakdown-section th,
+    .breakdown-section td{padding:8px 7px;white-space:nowrap;}
+    .breakdown-section a.breakdown-name{
+      padding:8px 2px;
+      min-height:40px;
+      display:inline-flex;
+      align-items:center;
+    }
+    .breakdown-section .table-scroll table{min-width:420px;}
+    #modal .table-scroll table{min-width:560px;}
+    .modal-actions{
+      flex-direction:column;
+      position:sticky;
+      bottom:0;
+      z-index:2;
+      background:#fff;
+      padding:12px 0 calc(4px + env(safe-area-inset-bottom,0px));
+      margin-top:14px;
+      border-top:1px solid var(--line);
+      gap:8px;
+    }
+    .modal-actions .btn-cancel,
+    .modal-actions .btn-save{
+      width:100%;
+      min-height:44px;
+      font-size:15px;
+    }
+  }
+
+  /* Mobile/tablet: cards instead of wide table; PC keeps the table */
+  @media(max-width:900px){
+    .person-projects-desktop{display:none !important;}
+    .person-projects-mobile{display:block;}
+    .modal-actions{flex-direction:column;}
+    .modal-actions .btn-cancel,
+    .modal-actions .btn-save{width:100%;min-height:44px;}
+    #modal.wide .person-summary{font-size:12px;gap:4px 10px;}
   }
 </style>
 </head>
@@ -754,7 +836,7 @@ function closeNav(){
   document.body.classList.remove('nav-open');
 }
 function wrapTables(){
-  document.querySelectorAll('#main table').forEach(t => {
+  document.querySelectorAll('#main table, #modal table').forEach(t => {
     if(t.parentElement && t.parentElement.classList.contains('table-scroll')) return;
     const w = document.createElement('div');
     w.className = 'table-scroll';
@@ -883,12 +965,132 @@ function companyDevSummaryHtml(devStats){
       </div>
     </div>`;
 }
-function statCardsHtml(projects){
-  const total = projects.length;
-  const delayed = projects.filter(p=>isDelayedStatusName(p.status)).length;
-  const delivered = projects.filter(p=>isDeliveryStatusName(p.status)).length;
-  const active = total - delayed - delivered;
-  const late = projects.filter(isOverdue).length;
+function projectCounts(list){
+  const delayed = list.filter(p=>isDelayedStatusName(p.status)).length;
+  const delivered = list.filter(p=>isDeliveryStatusName(p.status)).length;
+  return {
+    total: list.length,
+    delayed,
+    delivered,
+    active: list.length - delayed - delivered,
+    late: list.filter(isOverdue).length
+  };
+}
+function projectBreakdownRows(projects, field, roles){
+  const users = ALL_USERS.filter(u=>roles.includes(u.role));
+  const rows = users.map(u=>{
+    const uid = u.uid || u.id;
+    const own = projects.filter(p=>p[field]===uid);
+    return { uid, name: displayNameFor(u), ...projectCounts(own) };
+  }).filter(r=>r.total>0).sort((a,b)=>b.total-a.total || a.name.localeCompare(b.name));
+  const assignedIds = new Set(users.map(u=>u.uid||u.id));
+  const unassigned = projects.filter(p=>!p[field] || !assignedIds.has(p[field]));
+  if(unassigned.length) rows.push({ uid: '', name: 'Unassigned', ...projectCounts(unassigned) });
+  return rows;
+}
+function breakdownTableHtml(title, rows, field){
+  if(!rows.length) return `<div class="breakdown-section"><h4>${title}</h4><div class="empty" style="padding:14px;">No projects assigned.</div></div>`;
+  return `<div class="breakdown-section"><h4>${title}</h4>
+    <table><thead><tr><th>Name</th><th>Total</th><th>Active</th><th>Delayed</th><th>Late</th><th>Delivered</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td><a href="#" class="breakdown-name" onclick="openPersonProjectsModal('${escHtml(r.uid||'')}','${field}');return false;">${escHtml(r.name)}</a></td>
+      <td class="mono">${r.total}</td>
+      <td class="mono">${r.active}</td>
+      <td class="mono">${r.delayed}</td>
+      <td class="mono">${r.late}</td>
+      <td class="mono">${r.delivered}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+function openPersonProjectsModal(uid, field){
+  const projects = ALL_PROJECTS;
+  const roles = field === 'salesOwnerId' ? ['Sales'] : ['Developer','Freelancer'];
+  const users = ALL_USERS.filter(u=>roles.includes(u.role));
+  const assignedIds = new Set(users.map(u=>u.uid||u.id));
+  let list, label;
+  if(!uid){
+    list = projects.filter(p=>!p[field] || !assignedIds.has(p[field]));
+    label = 'Unassigned';
+  } else {
+    list = projects.filter(p=>p[field]===uid);
+    const u = ALL_USERS.find(x=>(x.uid||x.id)===uid);
+    label = u ? displayNameFor(u) : userName(uid);
+  }
+  list = sortProjectsByDeadline(list);
+  const roleLabel = field === 'salesOwnerId' ? 'Salesman' : 'Developer';
+  const counts = projectCounts(list);
+  showModal(`
+    <h3>${escHtml(label)} — Projects</h3>
+    <div class="person-summary">
+      <span class="ps-item">${roleLabel}</span>
+      <span class="ps-item">Total ${counts.total}</span>
+      <span class="ps-item">Active ${counts.active}</span>
+      <span class="ps-item">Delayed ${counts.delayed}</span>
+      <span class="ps-item">Late ${counts.late}</span>
+      <span class="ps-item">Delivered ${counts.delivered}</span>
+    </div>
+    ${personProjectsHtml(list)}
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="openProjectBreakdownModal()">← Back</button>
+      <button class="btn-cancel" onclick="closeModal()">Close</button>
+    </div>
+  `, true);
+  tickCountdowns();
+}
+function renderPersonProjectCards(projects){
+  if(!projects.length) return `<div class="empty">No projects assigned.</div>`;
+  const showBudget = CURRENT_USER.role !== "Freelancer";
+  const canEdit = ["Admin","Project Manager","Team Lead"].includes(CURRENT_USER.role);
+  return `<div class="pp-cards">${projects.map(p=>`
+    <article class="pp-card">
+      <div class="pp-card-title">${escHtml(p.profileName||'Untitled')}</div>
+      <div class="pp-card-sub">${escHtml((p.profileTags||[]).join(', ') || '—')}</div>
+      <div class="pp-card-tags">
+        <span class="tag" style="${statusTagStyle(p.status)}">${escHtml(p.status||'—')}</span>
+        <span class="tag pri-${escHtml(p.priority||'Medium')}">${escHtml(p.priority||'—')}</span>
+      </div>
+      <div class="pp-card-grid">
+        <div><span class="k">Client</span><span class="v">${escHtml(clientName(p.clientId))}</span></div>
+        <div><span class="k">Sales</span><span class="v">${escHtml(userName(p.salesOwnerId))}</span></div>
+        <div><span class="k">Developer</span><span class="v">${escHtml(userName(p.assignedDevId))}</span></div>
+        ${showBudget ? `<div><span class="k">Budget</span><span class="v mono">${p.budget?('$'+escHtml(String(p.budget))):'—'}</span></div>` : ''}
+        <div class="pp-deadline"><span class="k">Deadline</span><span class="v mono">${escHtml(p.deadline||'—')}<br><span class="live-countdown" data-deadline="${escHtml(p.deadline||'')}">—</span></span></div>
+      </div>
+      ${canEdit ? `<div class="row-actions" style="margin-top:10px;"><button onclick="openProjectModal('${p.id}')">Edit</button></div>` : ''}
+    </article>`).join('')}</div>`;
+}
+function personProjectsHtml(projects){
+  if(!projects.length) return `<div class="empty">No projects assigned.</div>`;
+  return `
+    <div class="person-projects-desktop">${renderProjectTable(projects, true)}</div>
+    <div class="person-projects-mobile">${renderPersonProjectCards(projects)}</div>
+  `;
+}
+function openProjectBreakdownModal(){
+  const projects = ALL_PROJECTS;
+  const salesRows = projectBreakdownRows(projects, 'salesOwnerId', ['Sales']);
+  const devRows = projectBreakdownRows(projects, 'assignedDevId', ['Developer','Freelancer']);
+  const counts = projectCounts(projects);
+  showModal(`
+    <h3>Project breakdown</h3>
+    <p style="margin:0 0 4px;font-size:13px;color:var(--slate);">Per salesman &amp; developer — Total ${counts.total} · Active ${counts.active} · Delayed ${counts.delayed} · Late ${counts.late}</p>
+    ${breakdownTableHtml('Salesmen', salesRows, 'salesOwnerId')}
+    ${breakdownTableHtml('Developers', devRows, 'assignedDevId')}
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Close</button></div>
+  `, true);
+}
+function companyStatCardsHtml(){
+  const { total, active, delayed, late } = projectCounts(ALL_PROJECTS);
+  return `
+    <div style="font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;font-weight:600;">Company</div>
+    <div class="stat-row">
+      <div class="stat-card clickable" onclick="openProjectBreakdownModal()" title="View breakdown by salesman & developer"><div class="num">${total}</div><div class="lbl">Total Projects</div></div>
+      <div class="stat-card"><div class="num">${active}</div><div class="lbl">Active</div></div>
+      <div class="stat-card warn"><div class="num">${delayed}</div><div class="lbl">Delayed</div></div>
+      <div class="stat-card danger"><div class="num">${late}</div><div class="lbl">Late</div></div>
+    </div>`;
+}
+function personalStatCardsHtml(projects){
+  const { total, active, delayed, late } = projectCounts(projects);
   return `
     <div class="topline"><h2>${CURRENT_USER.name||'Dashboard'}</h2><div class="role-badge">${CURRENT_USER.role}${CURRENT_USER.team?' · '+CURRENT_USER.team:''}</div></div>
     <div class="stat-row">
@@ -897,6 +1099,9 @@ function statCardsHtml(projects){
       <div class="stat-card warn"><div class="num">${delayed}</div><div class="lbl">Delayed</div></div>
       <div class="stat-card danger"><div class="num">${late}</div><div class="lbl">Late</div></div>
     </div>`;
+}
+function statCardsHtml(myProjects){
+  return `${companyStatCardsHtml()}${personalStatCardsHtml(myProjects)}`;
 }
 function monthPickerHtml(){
   return `<input type="month" value="${dashboardMonth}" style="width:auto;display:inline-block;" onchange="dashboardMonth=this.value; navigate('dashboard');">`;
@@ -1648,8 +1853,19 @@ async function deleteProfile(id){
 /* ============================================================
    MODAL HELPERS
    ============================================================ */
-function showModal(html){ document.getElementById('modal').innerHTML = html; document.getElementById('modalBg').style.display='flex'; }
-function closeModal(){ document.getElementById('modalBg').style.display='none'; }
+function showModal(html, wide=false){
+  const modal = document.getElementById('modal');
+  modal.classList.toggle('wide', !!wide);
+  modal.innerHTML = html;
+  document.getElementById('modalBg').style.display='flex';
+  document.body.style.overflow = 'hidden';
+  wrapTables();
+}
+function closeModal(){
+  document.getElementById('modalBg').style.display='none';
+  document.getElementById('modal').classList.remove('wide');
+  document.body.style.overflow = '';
+}
 function val(id){ const el=document.getElementById(id); return el? el.value : ''; }
 function toggleTargetField(){
   const role = val('f_urole');
