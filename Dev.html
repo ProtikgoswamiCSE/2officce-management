@@ -1374,19 +1374,20 @@ async function saveProject(id){
    CLIENTS
    ============================================================ */
 function renderClients(){
-  const canCreate = ["Admin","Project Manager"].includes(CURRENT_USER.role);
+  const canManage = ["Admin","Project Manager"].includes(CURRENT_USER.role);
   const rows = ALL_CLIENTS.filter(c=> CURRENT_USER.role!=="Sales" || c.assignedSalesRep===CURRENT_USER.uid || ALL_PROJECTS.some(p=>p.clientId===c.id && p.salesOwnerId===CURRENT_USER.uid))
     .map(c=>`<tr>
       <td>${c.name}</td><td>${c.companyProfile||''}</td><td>${userName(c.assignedSalesRep)}</td>
-      <td class="row-actions">${canCreate?`<button onclick="openClientModal('${c.id}')">Edit</button>`:''}</td>
+      <td class="row-actions">${canManage?`<button onclick="openClientModal('${c.id}')">Edit</button><button onclick="deleteClient('${c.id}')" style="color:var(--red);">Delete</button>`:''}</td>
     </tr>`).join('');
   document.getElementById('main').innerHTML = `
-    <div class="topline"><h2>Clients</h2>${canCreate?`<button class="add-btn" onclick="openClientModal()">+ New Client</button>`:''}</div>
+    <div class="topline"><h2>Clients</h2>${canManage?`<button class="add-btn" onclick="openClientModal()">+ New Client</button>`:''}</div>
     <table><thead><tr><th>Name</th><th>Company Profile</th><th>Sales Rep</th><th></th></tr></thead>
     <tbody>${rows || '<tr><td class="empty" colspan="4">No clients yet.</td></tr>'}</tbody></table>
   `;
 }
 function openClientModal(id){
+  if(!["Admin","Project Manager"].includes(CURRENT_USER.role)) return;
   const c = id ? ALL_CLIENTS.find(x=>x.id===id) : {};
   const salesUsers = ALL_USERS.filter(u=>u.role==="Sales");
   showModal(`
@@ -1401,10 +1402,26 @@ function openClientModal(id){
   `);
 }
 async function saveClient(id){
+  if(!["Admin","Project Manager"].includes(CURRENT_USER.role)) return;
   const doc = { name: val('f_cname'), companyProfile: val('f_cprofile'), assignedSalesRep: val('f_csales') };
   if(id) await db.collection('clients').doc(id).update(doc);
   else await db.collection('clients').add(doc);
   closeModal(); await refreshAndRender();
+}
+async function deleteClient(id){
+  if(!["Admin","Project Manager"].includes(CURRENT_USER.role)) return;
+  const c = ALL_CLIENTS.find(x=>x.id===id);
+  const label = c ? (c.name || 'this client') : 'this client';
+  const linkedProjects = ALL_PROJECTS.filter(p=>p.clientId===id);
+  const extra = linkedProjects.length
+    ? ` ${linkedProjects.length} linked project(s) will also be removed.`
+    : '';
+  if(!confirm(`Delete client "${label}"?${extra} This cannot be undone.`)) return;
+  for(const p of linkedProjects){
+    await db.collection('projects').doc(p.id).delete();
+  }
+  await db.collection('clients').doc(id).delete();
+  await refreshAndRender();
 }
 
 /* ============================================================

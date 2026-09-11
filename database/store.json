@@ -200,57 +200,6 @@
     }
   },
   "profiles": {
-    "tag_web": {
-      "name": "Web Development",
-      "gigNames": [
-        "React",
-        "Next.js",
-        "WordPress",
-        "Shopify",
-        "Laravel"
-      ]
-    },
-    "tag_mobile": {
-      "name": "Mobile App",
-      "gigNames": [
-        "Flutter",
-        "React Native",
-        "iOS",
-        "Android"
-      ]
-    },
-    "tag_seo": {
-      "name": "SEO",
-      "gigNames": [
-        "On-page SEO",
-        "Technical SEO",
-        "Link Building"
-      ]
-    },
-    "tag_uiux": {
-      "name": "UI/UX Design",
-      "gigNames": [
-        "Figma",
-        "Landing Page",
-        "Dashboard UI"
-      ]
-    },
-    "tag_wp": {
-      "name": "WordPress",
-      "gigNames": [
-        "Theme Dev",
-        "Plugin Dev",
-        "WooCommerce"
-      ]
-    },
-    "llw6miFUdtNSJxDkU0Xv": {
-      "name": "Rahatul",
-      "gigNames": [
-        "bhajdsalkf",
-        "asdfjanblkja",
-        "aslkdnlfjkas"
-      ]
-    },
     "m6QHLelQ4m2YAkHSW1RO": {
       "name": "momin",
       "gigNames": [
