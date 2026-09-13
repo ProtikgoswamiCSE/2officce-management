@@ -14,7 +14,7 @@ Mermaid renderer na thakleo ASCII diagram pora jabe.
                     └──────────┬──────────┘
                                │
                     ┌──────────▼──────────┐
-                    │  Browser: /main     │
+                    │  Browser: /         │
                     │  LOGIN PAGE         │
                     └──────────┬──────────┘
                                │
@@ -59,7 +59,7 @@ Mermaid renderer na thakleo ASCII diagram pora jabe.
   START
     │
     ▼
-[1] http://localhost:3000/main kholo
+[1] http://localhost:3000/ kholo
     │
     ▼
 [2] Upor e profile pick koro
@@ -299,7 +299,7 @@ Mermaid renderer na thakleo ASCII diagram pora jabe.
 
 ```
   1. Terminal e:  node server.js
-  2. Browser e:   http://localhost:3000/main
+  2. Browser e:   http://localhost:3000/
   3. Profile select
   4. Email + password
   5. Sign in → Dashboard

@@ -1,8 +1,8 @@
 {
   "settings": {
     "company": {
-      "salesTarget": 35000,
-      "deliveryTarget": 8
+      "salesTarget": 3500,
+      "deliveryTarget": 10
     },
     "userOrder": {
       "ids": [
@@ -70,7 +70,7 @@
         "WordPress"
       ],
       "monthlyTarget": 0,
-      "monthlyDeliveryTarget": 0
+      "monthlyDeliveryTarget": 300
     },
     "tanvirDevUid0000000001": {
       "name": "Tanvir Ahmed",
@@ -84,7 +84,7 @@
         "Web",
         "WordPress"
       ],
-      "monthlyDeliveryTarget": 4
+      "monthlyDeliveryTarget": 400
     },
     "farhanaDevUid00000001": {
       "name": "Farhana Islam",
@@ -98,7 +98,7 @@
         "Mobile",
         "UI/UX"
       ],
-      "monthlyDeliveryTarget": 3
+      "monthlyDeliveryTarget": 30000
     },
     "imranFreeUid0000000001": {
       "name": "Imran Hossain",
@@ -112,7 +112,7 @@
         "SEO",
         "WordPress"
       ],
-      "monthlyDeliveryTarget": 2,
+      "monthlyDeliveryTarget": 20000,
       "monthlyTarget": 0
     },
     "antuSalesUid0000000001": {
@@ -124,7 +124,7 @@
       "contact": "antu.doptortech@gmail.com",
       "active": true,
       "profiles": [],
-      "monthlyTarget": 8000,
+      "monthlyTarget": 2000,
       "banned": false
     },
     "protikSalesUid0000001": {
@@ -159,7 +159,7 @@
       "contact": "adib.doptortech@gmail.com",
       "active": true,
       "profiles": [],
-      "monthlyTarget": 7000
+      "monthlyTarget": 700
     },
     "badolSalesUid0000000001": {
       "name": "Badol",
@@ -170,7 +170,7 @@
       "contact": "badol.doptortech@gmail.com",
       "active": true,
       "profiles": [],
-      "monthlyTarget": 8000
+      "monthlyTarget": 3000
     },
     "7ACKkv7pojY7NdL2GrV4": {
       "name": "Momin",
@@ -358,6 +358,11 @@
       "name": "ddip",
       "companyProfile": "momin",
       "assignedSalesRep": "tkG9Fo8S5YVQYkNlXgqD"
+    },
+    "hTa7jilz27TPqdS2UKDI": {
+      "name": "qqqqqqqqqqqqqqqqqq",
+      "companyProfile": "",
+      "assignedSalesRep": "badolSalesUid0000000001"
     }
   },
   "projects": {
@@ -549,7 +554,7 @@
     "prj_rahman": {
       "profileName": "Rahman Law Firm Site",
       "clientId": "cli_rahman",
-      "teamLeadId": "nabilaLeadUid00000001",
+      "teamLeadId": "",
       "assignedDevId": "tanvirDevUid0000000001",
       "salesOwnerId": "badolSalesUid0000000001",
       "assignedPMId": "rafiqPmUid00000000001",
@@ -558,9 +563,7 @@
       "startDate": "2026-08-02",
       "deadline": "2026-08-28",
       "budget": 4800,
-      "profileTags": [
-        "Web Development"
-      ],
+      "profileTags": [],
       "developingStage": "Delivered",
       "extensions": 0,
       "reviewRating": 4.4,
@@ -595,18 +598,18 @@
       "assignedDevId": "tanvirDevUid0000000001",
       "salesOwnerId": "badolSalesUid0000000001",
       "assignedPMId": "rafiqPmUid00000000001",
-      "status": "In Progress",
+      "status": "Completed",
       "priority": "Medium",
       "startDate": "2026-09-04",
       "deadline": "2026-09-28",
       "budget": 2424,
-      "profileTags": [
-        "Mobile App"
-      ],
+      "profileTags": [],
       "developingStage": "Discovery",
       "extensions": 0,
       "reviewRating": null,
-      "createdAt": "2026-09-04"
+      "createdAt": "2026-09-04",
+      "completedAt": "2026-09-13",
+      "deliveredAt": "2026-09-13"
     },
     "vTfl0dxhTpP7SM5qfEKG": {
       "profileName": "fadsljkasd",
@@ -654,8 +657,8 @@
       "teamLeadId": "",
       "assignedDevId": "tanvirDevUid0000000001",
       "salesOwnerId": "adibSalesUid0000000001",
-      "assignedPMId": "",
-      "status": "Not Started",
+      "assignedPMId": "sanaulAdminUid0000001",
+      "status": "Completed",
       "priority": "Medium",
       "startDate": "2026-09-04",
       "deadline": "2026-09-30",
@@ -666,7 +669,9 @@
       "developingStage": "",
       "extensions": 0,
       "reviewRating": null,
-      "createdAt": "2026-09-04"
+      "createdAt": "2026-09-04",
+      "completedAt": "2026-09-13",
+      "deliveredAt": "2026-09-13"
     },
     "H3mGDDeanmLDk26wraxS": {
       "profileName": "444",
@@ -727,6 +732,26 @@
       "extensions": 0,
       "reviewRating": null,
       "createdAt": "2026-09-04"
+    },
+    "fF0ZYxQAjBtTL7q3yVki": {
+      "profileName": "asdfasfdd",
+      "clientId": "hTa7jilz27TPqdS2UKDI",
+      "teamLeadId": "protikSalesUid0000001",
+      "assignedDevId": "tanvirDevUid0000000001",
+      "salesOwnerId": "badolSalesUid0000000001",
+      "status": "Not Started",
+      "priority": "Medium",
+      "startDate": "2026-09-13",
+      "deadline": "2026-09-30",
+      "budget": 1000,
+      "profileTags": [
+        "momin"
+      ],
+      "developingStage": "",
+      "extensions": 0,
+      "reviewRating": null,
+      "assignedPMId": "sanaulAdminUid0000001",
+      "createdAt": "2026-09-13"
     }
   },
   "dailyUpdates": {

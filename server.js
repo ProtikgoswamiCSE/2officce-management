@@ -136,7 +136,7 @@ const MIME = {
 
 function serveStatic(req, res) {
   let urlPath = decodeURIComponent(req.url.split("?")[0]);
-  if (urlPath === "/") urlPath = "/main.html";
+  if (urlPath === "/") urlPath = "/index.html";
   if (!path.extname(urlPath)) {
     const htmlPath = urlPath + ".html";
     const candidate = path.join(ROOT, path.normalize(htmlPath).replace(/^(\.\.[/\\])+/, ""));
@@ -244,7 +244,7 @@ server.listen(PORT, () => {
   console.log("");
   console.log("  Doptor Tech — File Database Server");
   console.log("  ----------------------------------");
-  console.log(`  App:      http://localhost:${PORT}/main`);
+  console.log(`  App:      http://localhost:${PORT}/`);
   console.log(`  Database: ${DB_DIR}`);
   console.log("    - store.json  (projects, users, clients, profiles...)");
   console.log("    - auth.json   (login emails + passwords)");

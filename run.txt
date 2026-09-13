@@ -10,7 +10,7 @@ cd "c:\Users\USER\Desktop\badol\2officce management-20260831T173307Z-1-001\2offi
 node server.js
 
 3) Browser e khulun:
-http://localhost:3000/main
+http://localhost:3000/
 
 === Login ===
 Email: sanaul.doptortech@gmail.com
